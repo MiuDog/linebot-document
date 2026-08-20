@@ -1,0 +1,71 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# 排除所有環境變數與私密憑證檔案
+.env
+.env.*
+*.local
+# 但範本檔要進版控，它只有說明與空白值
+!.env.example
+
+### 資產資料 ###
+# 圖片本體與 SQLite 索引屬於營運資料，不進版控。
+# 正式環境的資產庫由 ASSETS_ROOT 指向專案外的路徑（例如 F:/資產庫），
+# 這裡排除的是未設定 ASSETS_ROOT 時的預設位置。
+/assets-store/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+### 報價單產出 ###
+/quotations/
+/quotation-output/
+/log/
+
+### Codex／試算表暫存 ###
+/.codex-tmp/
+*.inspect.ndjson
+
+
+/example
+
+### 桌面 App 執行期資料 ###
+# 使用者資料根目錄：log、SQLite 與報價產出都屬營運資料，不進版控。
+/system-data/
+
+### 報價單次執行產物 ###
+# outputs/ 只有 excel-templates 是建置輸入（Maven 會複製進 JAR），其餘為執行結果。
+/outputs/*/
+!/outputs/excel-templates/
