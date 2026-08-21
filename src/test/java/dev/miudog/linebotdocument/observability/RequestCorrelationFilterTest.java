@@ -62,18 +62,12 @@ class RequestCorrelationFilterTest {
 		assertThat(output.getOut()).doesNotContain("secret-download-token");
 	}
 
-	// 驗證實際報價與圖片公開路由的 raw token 都不會出現在任何 HTTP 日誌。
+	// 驗證圖片公開路由的 raw token 不會出現在任何 HTTP 日誌。
 	@Test
 	void templatesPublicDownloadAndMediaTokens(CapturedOutput output) throws Exception {
 		RequestCorrelationFilter filter = new RequestCorrelationFilter();
-		MockHttpServletResponse quotationResponse = new MockHttpServletResponse();
 		MockHttpServletResponse mediaResponse = new MockHttpServletResponse();
 
-		filter.doFilter(
-			new MockHttpServletRequest("GET", "/quotation-downloads/raw-quotation-token"),
-			quotationResponse,
-			new MockFilterChain()
-		);
 		filter.doFilter(
 			new MockHttpServletRequest("GET", "/media/raw-share-token"),
 			mediaResponse,
@@ -83,13 +77,12 @@ class RequestCorrelationFilterTest {
 		List<JsonNode> events = structuredEvents(output, "http_request_completed");
 		if (!events.isEmpty()) {
 			assertThat(events).extracting(event -> kvp(event, "path"))
-				.containsExactly("/quotation-downloads/{token}", "/media/{shareToken}");
+				.containsExactly("/media/{shareToken}");
 		}
 		else {
-			assertThat(output).contains("path=/quotation-downloads/{token}", "path=/media/{shareToken}");
+			assertThat(output).contains("path=/media/{shareToken}");
 		}
 		assertThat(output.getOut())
-			.doesNotContain("raw-quotation-token")
 			.doesNotContain("raw-share-token");
 	}
 

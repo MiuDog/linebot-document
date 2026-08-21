@@ -112,25 +112,12 @@ public class AssetRepository {
 
 	// 方法：取得檔案同步需要的全部資產索引。
 	public List<Asset> findAll() {
-		// 外部呼叫：資產根目錄同步排除由正式報價資料夾管理的圖片。
 		return jdbc.sql("""
 			SELECT a.* FROM asset a
-			WHERE NOT EXISTS (
-				SELECT 1 FROM quotation_asset qa WHERE qa.asset_id = a.id
-			)
 			ORDER BY a.id
 			""")
 			.query(AssetRepository::mapAsset)
 			.list();
-	}
-
-	// 方法：判斷圖片是否由正式報價資料夾管理。
-	public boolean isQuotationAsset(long assetId) {
-		Integer count = jdbc.sql("SELECT COUNT(*) FROM quotation_asset WHERE asset_id = ?")
-			.param(assetId)
-			.query(Integer.class)
-			.single();
-		return count != null && count > 0;
 	}
 
 	// 方法：更新 Explorer 改名或移動後的檔案資料。

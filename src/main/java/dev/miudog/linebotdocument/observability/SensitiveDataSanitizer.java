@@ -5,9 +5,6 @@ import java.util.regex.Pattern;
 /** 集中處理可進入日誌的安全字串，防止憑證與下載 token 外洩。 */
 public final class SensitiveDataSanitizer {
 
-	private static final Pattern QUOTATION_DOWNLOAD_PATH = Pattern.compile(
-		"(?i)^/quotation-downloads/[^/?#]+(?:/.*)?$"
-	);
 	private static final Pattern MEDIA_SHARE_PATH = Pattern.compile(
 		"(?i)^/media/[^/?#]+(?:/.*)?$"
 	);
@@ -27,8 +24,6 @@ public final class SensitiveDataSanitizer {
 		if (requestPath == null || requestPath.isBlank()) return "/";
 
 		String pathOnly = requestPath.split("[?#]", 2)[0];
-		if (QUOTATION_DOWNLOAD_PATH.matcher(pathOnly).matches()) return "/quotation-downloads/{token}";
-
 		if (MEDIA_SHARE_PATH.matcher(pathOnly).matches()) return "/media/{shareToken}";
 
 		return SECRET_PATH_SEGMENT.matcher(pathOnly).replaceAll("$1[REDACTED]");

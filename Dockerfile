@@ -11,7 +11,6 @@ RUN mvn dependency:go-offline -B
 
 # 【快取優化 2】依賴下載完畢後才複製原始碼
 COPY src ./src
-COPY outputs/excel-templates ./outputs/excel-templates
 RUN mvn clean package -DskipTests
 
 # ============================================================
@@ -36,7 +35,7 @@ ENV LANG=C.UTF-8 \
 # 升版本號時不需要回來改這一行
 COPY --from=build /app/target/app.jar app.jar
 
-# 系統共同掛載點：圖片、SQLite、報價單與日誌都在其子路徑內
+# 系統共同掛載點：圖片、SQLite 與日誌都在其子路徑內
 # 主機端的實際位置由 docker-compose 的 SYSTEM_ROOT_PATH 決定
 VOLUME /data/system-root
 

@@ -16,7 +16,7 @@ services:
     build: .
     container_name: linebot-document-service
     volumes:
-      # 一次掛載共同根目錄，圖片、資料庫、報價與日誌都保存在其子路徑。
+      # 一次掛載共同根目錄，圖片、資料庫與日誌都保存在其子路徑。
       - "${SYSTEM_ROOT_PATH:-./system-data}:/data/system-root"
     # .env 內所有變數會整批帶進容器，新增 AI_* 等變數時不必回來改這個檔案
     env_file:

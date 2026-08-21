@@ -39,7 +39,7 @@ class UnifiedEnvironmentConfigurationTest {
 			.doesNotContain("ASSETS_ROOT=")
 			.doesNotContain("QUOTATION_ROOT_PATH=");
 		assertThat(dockerfile)
-			.contains("COPY outputs/excel-templates ./outputs/excel-templates")
+			.doesNotContain("COPY outputs/excel-templates")
 			.contains("VOLUME /data/system-root")
 			.doesNotContain("VOLUME /data/assets");
 	}
