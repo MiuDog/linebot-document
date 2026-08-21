@@ -254,7 +254,7 @@ public class OpenAiVoiceGateway implements VoiceAiGateway {
 	// 方法：建立強制收據完整、工具單次執行的任務規則。
 	private String instructions(String ticket, LocalDate currentDate) {
 		return """
-			你是 LINE 圖片資產語音任務分析器。逐字稿已確認以「小定」開頭。
+			你是 LINE 圖片資產語音任務分析器。逐字稿已確認以「小京」開頭。
 			目前唯一支援的實際功能是「圖片取出」。今天日期是 %s。
 			從逐字稿整理一張收據：action、departmentCode、date。
 			部門編號只允許大寫格式 ZD+五碼數字+可選一碼大寫英文、ZD-JY+五碼數字、YJ+六碼數字。
@@ -272,14 +272,14 @@ public class OpenAiVoiceGateway implements VoiceAiGateway {
 			ByteArrayOutputStream body = new ByteArrayOutputStream(audio.length + 1_024);
 			writeTextPart(body, boundary, "model", transcriptionModel);
 			writeTextPart(body, boundary, "languages[]", "zh-tw");
-			writeTextPart(body, boundary, "keywords[]", "小定");
+			writeTextPart(body, boundary, "keywords[]", "小京");
 			writeTextPart(body, boundary, "keywords[]", "圖片取出");
 			writeTextPart(body, boundary, "keywords[]", "ZD-JY");
 			writeTextPart(
 				body,
 				boundary,
 				"prompt",
-				"繁體中文 LINE 群組語音。關鍵詞：小定、圖片取出、ZD、ZD-JY、YJ。"
+				"繁體中文 LINE 群組語音。關鍵詞：小京、圖片取出、ZD、ZD-JY、YJ。"
 			);
 			body.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
 			body.write(("Content-Disposition: form-data; name=\"file\"; filename=\"voice.m4a\"\r\n")

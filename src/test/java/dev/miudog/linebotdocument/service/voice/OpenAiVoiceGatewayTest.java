@@ -39,7 +39,7 @@ class OpenAiVoiceGatewayTest {
 		server.createContext("/audio/transcriptions", exchange -> respond(
 			exchange,
 			transcriptionRequest,
-			"{\"model\":\"gpt-transcribe-snapshot\",\"text\":\"小定，圖片取出 ZD12345 八月十日\","
+			"{\"model\":\"gpt-transcribe-snapshot\",\"text\":\"小京，圖片取出 ZD12345 八月十日\","
 				+ "\"usage\":{\"input_tokens\":80,\"output_tokens\":20,"
 				+ "\"input_tokens_details\":{\"cached_tokens\":10}}}"
 		));
@@ -75,14 +75,14 @@ class OpenAiVoiceGatewayTest {
 			LocalDate.of(2026, 8, 11)
 		);
 
-		assertThat(transcript).isEqualTo("小定，圖片取出 ZD12345 八月十日");
+		assertThat(transcript).isEqualTo("小京，圖片取出 ZD12345 八月十日");
 		assertThat(decision.toolCalled()).isTrue();
 		assertThat(transcriptionRequest.get())
 			.contains("name=\"model\"")
 			.contains("gpt-transcribe")
 			.contains("name=\"languages[]\"")
 			.contains("zh-tw")
-			.contains("小定");
+			.contains("小京");
 		assertThat(responseRequest.get())
 			.contains("\"type\":\"mcp\"")
 			.contains("\"authorization\":\"mcp-secret\"")

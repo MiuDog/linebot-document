@@ -12,13 +12,13 @@ import java.io.InputStream;
 import java.time.Clock;
 import java.time.LocalDate;
 
-/** 接收 LINE 群組語音，並在「小定」喚醒詞成立時交由 AI 處理。 */
+/** 接收 LINE 群組語音，並在「小京」喚醒詞成立時交由 AI 處理。 */
 @Service
 public class VoiceCommandService {
 
 	private static final Logger log = LoggerFactory.getLogger(VoiceCommandService.class);
 	private static final int MAX_AUDIO_BYTES = 25 * 1024 * 1024;
-	private static final String WAKE_WORD = "小定";
+	private static final String WAKE_WORD = "小京";
 
 	private final LineStorageService lineService;
 	private final VoiceAiGateway aiGateway;

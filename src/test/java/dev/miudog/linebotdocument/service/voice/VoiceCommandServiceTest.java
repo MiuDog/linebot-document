@@ -63,7 +63,7 @@ class VoiceCommandServiceTest {
 	@Test
 	void executesMcpAfterACompleteWakeWordTaskIsRecognized() throws Exception {
 		byte[] audio = "audio".getBytes(StandardCharsets.UTF_8);
-		String transcript = "小定，圖片取出 ZD12345 八月十日的圖片";
+		String transcript = "小京，圖片取出 ZD12345 八月十日的圖片";
 		when(lineService.downloadContent("A1"))
 			.thenReturn(new LineStorageService.LineContent(new ByteArrayInputStream(audio), "audio/mp4"));
 		when(aiGateway.isConfigured()).thenReturn(true);
@@ -85,7 +85,7 @@ class VoiceCommandServiceTest {
 	@Test
 	void repliesWithTheAiClarificationWhenTheReceiptIsIncomplete() throws Exception {
 		byte[] audio = "audio".getBytes(StandardCharsets.UTF_8);
-		String transcript = "小定，幫我取圖片";
+		String transcript = "小京，幫我取圖片";
 		when(lineService.downloadContent("A1"))
 			.thenReturn(new LineStorageService.LineContent(new ByteArrayInputStream(audio), "audio/mp4"));
 		when(aiGateway.isConfigured()).thenReturn(true);

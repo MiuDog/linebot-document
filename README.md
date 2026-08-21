@@ -16,7 +16,7 @@
 | 輸入合法代碼但未引用圖片 | 回覆操作錯誤，不會無回應 |
 | 輸入 `#查 ZD12345` | 把該代碼的圖片貼回群組 |
 | 輸入 `#標籤` | 列出所有編號與各自張數 |
-| 傳送以「小定」開頭的群組語音 | AI 整理部門與日期；資料完整時透過 MCP 取出圖片並貼回群組 |
+| 傳送以「小京」開頭的群組語音 | AI 整理部門與日期；資料完整時透過 MCP 取出圖片並貼回群組 |
 | 一對一輸入 `#報價`，再依提示補資料 | AI／OCR 解析、完整預覽、確認後背景產生 Excel／PDF 並以 Flex 交付 |
 | 輸入 `#說明` | 顯示用法 |
 | 標記機器人並輸入 `ping` | 回覆 `pong` 與本次事件的延遲毫秒數 |
@@ -159,7 +159,7 @@ VOICE_MCP_AUTH_TOKEN=一段自行產生且不可猜測的長字串
 
 `PUBLIC_BASE_URL` 必須是 OpenAI 能存取的公開 HTTPS 網址；未另填
 `VOICE_MCP_SERVER_URL` 時，程式會自動使用 `${PUBLIC_BASE_URL}/mcp`。
-在群組傳送「小定，圖片取出 ZD12345 八月十日的圖片」，資料完整時機器人會直接回覆查詢結果；缺少部門或日期時會以中文要求補充。只有開頭正確出現「小定」的語音才會進入任務分析。
+在群組傳送「小京，圖片取出 ZD12345 八月十日的圖片」，資料完整時機器人會直接回覆查詢結果；缺少部門或日期時會以中文要求補充。只有開頭正確出現「小京」的語音才會進入任務分析。
 
 完整步驟見 [docs/01-bot-deployment.md](docs/01-bot-deployment.md)。
 
@@ -180,18 +180,10 @@ Invoke-RestMethod http://localhost:8088/actuator/health
 正常時會看到 `status` 為 `UP`。持續查看應用程式日誌：
 
 ```powershell
-docker compose logs -f --tail=100 linebot
+docker compose logs -f linebot
 ```
 
-只查看系統定義的關鍵事件：
-
-```powershell
-docker compose logs linebot | Select-String "event="
-```
-
-啟動完成會出現 `event=application_ready`。其中 `aiConfigured=false` 只代表 AI
-設定尚未填妥，不代表主服務啟動失敗。LINE Webhook 與 AI 處理事件會帶有
-`requestId`，可用同一個識別碼串起單次請求的日誌。
+在同一網路的主機上開啟瀏覽器，連到 `http://<伺服器 IP>:8088/admin/`，即可進入管理介面維護品項、查閱報價單、下載 XLSX／PDF 與管理短效下載連結。若在本機執行，直接開啟 `http://localhost:8088/admin/`。
 
 ---
 
