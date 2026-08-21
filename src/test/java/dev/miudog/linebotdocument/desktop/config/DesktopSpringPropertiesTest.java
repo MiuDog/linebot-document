@@ -16,13 +16,13 @@ class DesktopSpringPropertiesTest {
 	void shouldMapEveryConfigurationFieldToItsSpringProperty() {
 		AppConfiguration configuration = AppConfiguration.defaults(Path.of(System.getProperty("java.io.tmpdir")))
 			.withValue(AppConfigurationField.LINE_BOT_CHANNEL_TOKEN, "line-token")
-			.withValue(AppConfigurationField.QUOTATION_POSTBACK_SECRET, "postback-secret");
+			.withValue(AppConfigurationField.ASSETS_SYNC_TOKEN, "sync-token");
 
 		Map<String, Object> properties = new DesktopSpringProperties().from(configuration);
 
 		assertThat(properties)
 			.containsEntry("line.bot.channel-token", "line-token")
-			.containsEntry("QUOTATION_POSTBACK_SECRET", "postback-secret")
+			.containsEntry("app.storage.sync-token", "sync-token")
 			.containsEntry("server.port", "8088")
 			.hasSize(AppConfigurationField.values().length);
 	}

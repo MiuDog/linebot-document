@@ -29,8 +29,7 @@ class UnifiedEnvironmentConfigurationTest {
 		assertThat(properties)
 			.contains("app.system.root=${SYSTEM_ROOT_PATH:${user.dir}/system-data}")
 			.contains("app.storage.root=${app.system.root}/")
-			.contains("app.quotation.root-path=${app.system.root}")
-			.contains("app.quotation.template-path=classpath:quotation/templates")
+			.doesNotContain("app.quotation.")
 			.contains("app.observability.log-path=${app.system.root}/log");
 		assertThat(compose)
 			.contains("${SYSTEM_ROOT_PATH:-./system-data}:/data/system-root")
@@ -82,7 +81,7 @@ class UnifiedEnvironmentConfigurationTest {
 		assertThat(properties.getProperty("app.storage.root"))
 			.isEqualTo("${app.system.root}/圖片資產");
 		assertThat(properties.getProperty("app.quotation.output-path"))
-			.isEqualTo("${app.system.root}/報價單");
+			.isNull();
 	}
 
 	// 方法：以 UTF-8 讀取受測設定檔。

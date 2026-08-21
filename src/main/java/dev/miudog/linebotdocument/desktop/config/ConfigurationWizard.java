@@ -318,7 +318,6 @@ public final class ConfigurationWizard implements AutoCloseable {
 			case LINE -> "LINE";
 			case AI -> "AI";
 			case VOICE -> "語音";
-			case QUOTATION -> "報價";
 			case LOG -> "記錄";
 			case NGROK -> "ngrok";
 			case CLOUDFLARE -> "Cloudflare";
