@@ -23,7 +23,7 @@ class AppConfigurationTest {
 			.isEqualTo(localAppData.resolve("LinebotDocument/data").toString());
 	}
 
-	// 方法：驗證規格指定的八個機密欄位具有單一且完整的分類。
+	// 方法：驗證圖片資產系統的機密欄位具有單一且完整的分類。
 	@Test
 	void shouldClassifyEverySpecifiedSecretField() {
 		Set<String> secretEnvironmentKeys = AppConfigurationField.secretFields().stream()
@@ -33,12 +33,23 @@ class AppConfigurationTest {
 		assertThat(secretEnvironmentKeys).containsExactlyInAnyOrder(
 			"LINE_BOT_CHANNEL_TOKEN",
 			"LINE_BOT_CHANNEL_SECRET",
-			"AI_API_KEY",
-			"VOICE_MCP_AUTH_TOKEN",
 			"ASSETS_SYNC_TOKEN",
 			"NGROK_AUTHTOKEN",
 			"CLOUDFLARE_TUNNEL_TOKEN"
 		);
+	}
+
+	// 方法：文書機設定不得顯示 AI、語音、MCP 或報價槽位。
+	@Test
+	void shouldContainOnlyImageAssetProductGroups() {
+		assertThat(AppConfigurationField.values())
+			.extracting(AppConfigurationField::environmentKey)
+			.noneMatch(key -> key.startsWith("AI_")
+				|| key.startsWith("VOICE_")
+				|| key.startsWith("QUOTATION_"));
+		assertThat(AppConfigurationField.Group.values())
+			.extracting(Enum::name)
+			.doesNotContain("AI", "VOICE", "QUOTATION");
 	}
 
 	// 方法：驗證修改設定會建立新物件，不會改變既有設定快照。
@@ -54,4 +65,3 @@ class AppConfigurationTest {
 		assertThat(changed.value(AppConfigurationField.LINE_BOT_CHANNEL_TOKEN)).isEqualTo("test-token");
 	}
 }
-

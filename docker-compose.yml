@@ -18,14 +18,12 @@ services:
     volumes:
       # 一次掛載共同根目錄，圖片、資料庫與日誌都保存在其子路徑。
       - "${SYSTEM_ROOT_PATH:-./system-data}:/data/system-root"
-    # .env 內所有變數會整批帶進容器，新增 AI_* 等變數時不必回來改這個檔案
+    # .env 內所有文書機設定會整批帶進容器，不必重複維護 environment 清單。
     env_file:
       - .env
     environment:
       # 容器內只覆寫共同根目錄，所有子路徑由 Spring 設定推導。
       - SYSTEM_ROOT_PATH=/data/system-root
-      # 主機埠只綁 loopback，因此允許 Docker 私有橋接來源進入本機管理頁。
-      - LOCAL_ADMIN_CONTAINER_HOST_ACCESS=true
     ports:
       - "127.0.0.1:8088:8088"
     # Docker Desktop 重啟後自動恢復服務，手動 stop 時則保持停止。

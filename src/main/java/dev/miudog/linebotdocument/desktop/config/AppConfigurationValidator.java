@@ -62,6 +62,11 @@ public final class AppConfigurationValidator {
 			case ABSOLUTE_PATH -> value.isBlank() || isAbsolutePath(value);
 			case LOG_LEVEL -> value.isBlank() || LOG_LEVELS.contains(value.toUpperCase(Locale.ROOT));
 			case DATA_SIZE -> value.isBlank() || DATA_SIZE.matcher(value).matches();
+			case ARCHIVE_CODE_FORMATS -> value.isBlank() || isArchiveCodeFormats(value);
+			case CLOUDFLARE_PROTOCOL -> value.isBlank()
+				|| value.equalsIgnoreCase("auto")
+				|| value.equalsIgnoreCase("http2")
+				|| value.equalsIgnoreCase("quic");
 		};
 	}
 
@@ -120,6 +125,24 @@ public final class AppConfigurationValidator {
 		}
 	}
 
+	// 方法：驗證客戶遮罩只使用大寫英數字、連字號、數字符號與小老鼠符號。
+	private boolean isArchiveCodeFormats(String value) {
+		String[] masks = value.split(",", -1);
+		if (masks.length > 10) return false;
+
+		for (String sourceMask : masks) {
+			String mask = sourceMask.trim();
+			if (mask.isBlank() || mask.length() > 64) return false;
+
+			if (mask.charAt(0) == '#' || mask.charAt(0) == '@') return false;
+
+			// 外部函式：以固定白名單規則驗證遮罩字元，不執行客戶提供的 regex。
+			if (!mask.matches("[A-Z0-9#@-]+") || !(mask.contains("#") || mask.contains("@"))) return false;
+		}
+
+		return true;
+	}
+
 	//#endregion
 
 	/**
@@ -135,4 +158,3 @@ public final class AppConfigurationValidator {
 		}
 	}
 }
-

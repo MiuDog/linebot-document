@@ -24,8 +24,8 @@ class AppConfigurationRepositoryTest {
 	void shouldSeparateAndReloadPublicAndSecretValues() throws IOException {
 		AppConfigurationRepository repository = repository(new XorSecretStore());
 		AppConfiguration configuration = validConfiguration()
-			.withValue(AppConfigurationField.AI_MODEL, "gpt-test")
-			.withValue(AppConfigurationField.AI_API_KEY, "sensitive-ai-key");
+			.withValue(AppConfigurationField.QUERY_MAX_RESULTS, "3")
+			.withValue(AppConfigurationField.ASSETS_SYNC_TOKEN, "sensitive-sync-key");
 
 		repository.save(configuration);
 		Optional<AppConfiguration> loaded = repository.load();
@@ -33,10 +33,10 @@ class AppConfigurationRepositoryTest {
 		String protectedFile = Files.readString(repository.secretFile(), StandardCharsets.ISO_8859_1);
 
 		assertThat(loaded).isPresent();
-		assertThat(loaded.orElseThrow().value(AppConfigurationField.AI_MODEL)).isEqualTo("gpt-test");
-		assertThat(loaded.orElseThrow().value(AppConfigurationField.AI_API_KEY)).isEqualTo("sensitive-ai-key");
-		assertThat(publicFile).contains("AI_MODEL=gpt-test").doesNotContain("sensitive-ai-key");
-		assertThat(protectedFile).doesNotContain("sensitive-ai-key");
+		assertThat(loaded.orElseThrow().value(AppConfigurationField.QUERY_MAX_RESULTS)).isEqualTo("3");
+		assertThat(loaded.orElseThrow().value(AppConfigurationField.ASSETS_SYNC_TOKEN)).isEqualTo("sensitive-sync-key");
+		assertThat(publicFile).contains("QUERY_MAX_RESULTS=3").doesNotContain("sensitive-sync-key");
+		assertThat(protectedFile).doesNotContain("sensitive-sync-key");
 	}
 
 	// 方法：驗證新欄位不存在時使用預設值，未知欄位不會使舊設定失敗。
@@ -61,15 +61,17 @@ class AppConfigurationRepositoryTest {
 	@Test
 	void shouldPreserveThePreviousConfigurationWhenProtectionFails() {
 		AppConfigurationRepository workingRepository = repository(new XorSecretStore());
-		workingRepository.save(validConfiguration().withValue(AppConfigurationField.AI_MODEL, "stable-model"));
+		workingRepository.save(validConfiguration().withValue(AppConfigurationField.QUERY_MAX_RESULTS, "3"));
 		AppConfigurationRepository failingRepository = repository(new FailingSecretStore());
 
 		assertThatThrownBy(() -> failingRepository.save(
-			validConfiguration().withValue(AppConfigurationField.AI_MODEL, "broken-model")
+			validConfiguration()
+				.withValue(AppConfigurationField.QUERY_MAX_RESULTS, "2")
+				.withValue(AppConfigurationField.ASSETS_SYNC_TOKEN, "new-secret")
 		)).isInstanceOf(SecretProtectionException.class);
 
-		assertThat(workingRepository.load().orElseThrow().value(AppConfigurationField.AI_MODEL))
-			.isEqualTo("stable-model");
+		assertThat(workingRepository.load().orElseThrow().value(AppConfigurationField.QUERY_MAX_RESULTS))
+			.isEqualTo("3");
 	}
 
 	// 方法：建立使用暫存設定目錄的 Repository。
@@ -150,4 +152,3 @@ class AppConfigurationRepositoryTest {
 		}
 	}
 }
-

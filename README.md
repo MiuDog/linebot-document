@@ -1,6 +1,6 @@
 # Assets Manager LINE Bot
 
-`@linebot-document@0.1.8`
+`@linebot-document@0.2.0`
 
 把 LINE 群組當成圖片資產的收件與取件窗口：群組上傳圖片後，引用圖片並輸入合法資料夾代碼即可直接歸檔；SQLite 保存圖片組與正式檔案索引。
 
@@ -16,8 +16,6 @@
 | 輸入合法代碼但未引用圖片 | 回覆操作錯誤，不會無回應 |
 | 輸入 `#查 ZD12345` | 把該代碼的圖片貼回群組 |
 | 輸入 `#標籤` | 列出所有編號與各自張數 |
-| 傳送以「小京」開頭的群組語音 | AI 整理部門與日期；資料完整時透過 MCP 取出圖片並貼回群組 |
-| 一對一輸入 `#報價`，再依提示補資料 | AI／OCR 解析、完整預覽、確認後背景產生 Excel／PDF 並以 Flex 交付 |
 | 輸入 `#說明` | 顯示用法 |
 | 標記機器人並輸入 `ping` | 回覆 `pong` 與本次事件的延遲毫秒數 |
 
@@ -28,7 +26,6 @@
 ```
 system-data\
 ├─ log\
-├─ 報價單\
 └─ 圖片資產\
    ├─ assets.db
    ├─ .pending\
@@ -51,6 +48,8 @@ system-data\
 
 Windows 桌面版會安裝為單一 App，內含 Java Runtime，不需要使用者另裝 JDK／JRE。第一次開啟會顯示繁體中文設定精靈；關閉視窗後仍可留在系統匣背景執行，再次開啟 App 可查看狀態與即時 Log。
 
+所有設定都在 App 內完成：首次安裝會自動顯示設定精靈，日後可從主視窗按「編輯設定」，不需要也不提供瀏覽器管理頁。
+
 **目前版本導向為未簽章的個人使用版。** 功能完整，唯一差別是沒有 Authenticode 簽章，首次執行會出現 Windows SmartScreen 警告（處理方式見下方）。Release 建立在 private repo，只有具備存取權的人看得到，並一律標記為 pre-release。
 
 ### 自動發佈到 GitHub Release
@@ -58,7 +57,7 @@ Windows 桌面版會安裝為單一 App，內含 Java Runtime，不需要使用�
 推送符合 `v<主版號>.<次版號>.<修訂號>` 的 tag 即自動建置、驗證並建立 GitHub Release，資產只有一份 Setup.exe：
 
 ```powershell
-powershell.exe -NoProfile -File scripts\release.ps1 -Version 0.1.2
+powershell.exe -NoProfile -File scripts\release.ps1 -Version 0.2.0
 ```
 
 腳本會依序完成前置檢查、改寫 `pom.xml` 與 README 版本、提交、本機完整驗證、推分支再推 tag。任何一項前置檢查不過就在改動版本庫之前中止：
@@ -125,7 +124,7 @@ cp .env.example .env
 ```
 
 填入 `LINE_BOT_CHANNEL_TOKEN`、`LINE_BOT_CHANNEL_SECRET`、`NGROK_AUTHTOKEN`、
-`SYSTEM_ROOT_PATH`、`ASSETS_SYNC_TOKEN` 與 AI 設定，然後：
+`SYSTEM_ROOT_PATH` 與 `ASSETS_SYNC_TOKEN`，然後：
 
 ```bash
 docker compose --profile dev up --build -d
@@ -144,22 +143,6 @@ docker compose --profile dev up --build -d
 ```
 
 打開 http://localhost:4040 取得 ngrok 網址，填回 `.env` 的 `PUBLIC_BASE_URL` 並重啟，最後到 LINE Developers Console 把 Webhook URL 設成 `https://xxxx.ngrok-free.app/callback`。
-
-### 啟用群組語音
-
-在 `.env` 至少設定以下項目後重啟服務：
-
-```dotenv
-VOICE_COMMANDS_ENABLED=true
-AI_API_URL=https://api.openai.com/v1
-AI_API_KEY=你的_OpenAI_API_Key
-AI_MODEL=gpt-5.6-sol
-VOICE_MCP_AUTH_TOKEN=一段自行產生且不可猜測的長字串
-```
-
-`PUBLIC_BASE_URL` 必須是 OpenAI 能存取的公開 HTTPS 網址；未另填
-`VOICE_MCP_SERVER_URL` 時，程式會自動使用 `${PUBLIC_BASE_URL}/mcp`。
-在群組傳送「小京，圖片取出 ZD12345 八月十日的圖片」，資料完整時機器人會直接回覆查詢結果；缺少部門或日期時會以中文要求補充。只有開頭正確出現「小京」的語音才會進入任務分析。
 
 完整步驟見 [docs/01-bot-deployment.md](docs/01-bot-deployment.md)。
 
@@ -183,20 +166,15 @@ Invoke-RestMethod http://localhost:8088/actuator/health
 docker compose logs -f linebot
 ```
 
-在同一網路的主機上開啟瀏覽器，連到 `http://<伺服器 IP>:8088/admin/`，即可進入管理介面維護品項、查閱報價單、下載 XLSX／PDF 與管理短效下載連結。若在本機執行，直接開啟 `http://localhost:8088/admin/`。
-
 ---
 
 ## 文件
 
 | 文件 | 什麼時候看 |
 |---|---|
-| [文件樹入口](docs/README.md) | 不確定該看哪份 |
-| [04 LINE Bot 建置流程](docs/04-linebot-build-guide.md) | 第一次從零建立 LINE Bot |
-| [01 部署與外部串接](docs/01-bot-deployment.md) | 要在新機器上架起來 |
+| [文件入口](docs/README.md) | 安裝、設定、VPN、Cloudflare 與故障排除 |
 | [02 LINE Bot 規則與各階段處理](docs/02-linebot-rules.md) | 動訊息收發的程式碼前；測試或部署卡住 |
-| [03 版本、Release 與 Push SOP](docs/03-versioning-release-sop.md) | 要 commit、發版本、部署或回滾 |
-| [類別索引](docs/reference/index.md) | 要改程式碼，想知道該動哪個檔案 |
+| [Windows 發佈 Runbook](docs/release-runbook.md) | 建立、簽署或回復 Setup 發佈 |
 
 ---
 
@@ -221,14 +199,14 @@ docker compose logs -f linebot
 ./mvnw test
 ```
 
-自動測試涵蓋收錄、圖片組歸檔、每日流水號、路徑穿越防護、AI 提取、報價資料結構與運行日誌，
-**不需要真實 LINE 憑證或 AI 金鑰**。
+自動測試涵蓋收錄、圖片組歸檔、每日流水號、路徑穿越防護、同步安全與運行日誌，
+**不需要真實 LINE 憑證**。
 
 ```bash
 ./mvnw clean package
 ```
 
-Push 前的檢查清單見 [SOP 2.2 節](docs/03-versioning-release-sop.md#22-push-前檢查清單)。
+Push 前至少執行 `./mvnw clean verify`，Windows 發佈另依 [Windows 發佈 Runbook](docs/release-runbook.md) 驗證。
 
 ---
 
@@ -237,23 +215,5 @@ Push 前的檢查清單見 [SOP 2.2 節](docs/03-versioning-release-sop.md#22-pu
 | 功能 | 狀態 |
 |---|---|
 | 圖片收錄、`zd` 編號歸檔、查詢取用 | ✅ 完成 |
-| 群組語音「小定」與 MCP 圖片取出 | ✅ 第一階段完成（需 OpenAI key、公開 HTTPS 網址及 MCP 權杖） |
-| AI 規格資料提取 | ✅ 完成（報價與語音共用 `AI_API_URL`／`AI_API_KEY`／`AI_MODEL`） |
-| 五種 Excel 範本提取與變數化 | ✅ 完成（五份單工作表範本，另保留合併版供維護比對） |
-| 報價品項資料庫與本機管理頁 | ✅ 完成（開啟 `/admin/`，可匯出正式 XLSX 主檔或 UTF-8 CSV） |
-| AI 指令解析、固定 JSON 驗證與主檔解析 | ✅ 完成（管理頁可貼文字試跑；固定欄位不採信 AI） |
-| LINE 一對一報價草稿 | ✅ 缺漏補件、圖片詢問、完整預覽、簽章確認／取消與事件冪等已完成 |
-| Excel／PDF／LINE 交付 | ✅ 五格式 Excel、圖片嵌入、分頁、SQLite 持久工作、背景 Excel COM 轉 PDF、HTTPS 下載與 Flex 交付已完成 |
-| 報價圖片資產 | ✅ 草稿留在 `SYSTEM_ROOT_PATH/圖片資產/.pending`；確認後全部原圖移至「報價單」子目錄 |
-| 報價公式 | ✅ 第一階段 DIRECT 複價、5% 稅額與總額完成；⚠️ 長寬高等第二階段數量推算仍待規則 |
-| 本機報價管理 | ✅ 草稿／正式報價可搜尋及篩選；可查看完整快照、缺漏、程式計算金額、選圖與稽核，並下載、重試 XLSX／PDF／LINE、建立可複製的短效 HTTPS PDF 連結或撤銷連結；寫入操作具同源 CSRF 防護 |
-
-`#報價` 只在一對一聊天室建立或修改草稿；群組指令只提示改用私訊，不會顯示客戶或價格資料。
-正式確認會在同一 SQLite 交易中配置流水號、保存不可變快照及建立 generation job；工作者以租約、
-退避重試與啟動恢復處理 Excel／PDF。LINE mutation 完成後的回覆先寫入 outbox，reply 失敗或事件重送時
-可使用穩定 retry key 改走 push，不會再次執行同一 mutation。
-
-本機管理頁除限制 loopback 直連外，所有會改變狀態的 `/api/admin/` 請求還必須帶
-`X-Local-Admin-Request: 1`，並通過同源 `Origin`／`Sec-Fetch-Site` 驗證。
 
 **LINE 相簿拿不到**：Messaging API 完全不暴露群組相簿，照片放進相簿也不會產生 webhook 事件。本專案改用「引用回覆打編號」達成等效分類。

@@ -57,22 +57,10 @@ public class CommandService {
 	private static final Logger log = LoggerFactory.getLogger(CommandService.class);
 
 	/**
-	 * 歸檔格式只接受大寫，資料夾名稱完整保留這裡匹配的代碼。
-	 */
-	private static final Pattern ARCHIVE_CODE =
-		Pattern.compile("^(?:ZD\\d{5}[A-Z]?|ZD-JY\\d{5}|YJ\\d{6})$");
-
-	private static final Pattern ARCHIVE_PREFIX =
-		Pattern.compile("^(?:ZD|YJ).*");
-
-	/**
 	 * 標記機器人後只輸入 ping（不分大小寫）才算連線檢查，避免誤判一般對話。
 	 */
 	private static final Pattern PING_COMMAND =
 		Pattern.compile("^ping$", Pattern.CASE_INSENSITIVE);
-
-	private static final String ARCHIVE_SYNTAX_ERROR =
-		"檢測到語法錯誤，請修正後重新執行指令";
 
 	private static final String ARCHIVE_PERMISSION_ERROR =
 		"圖片歸檔失敗：圖片資料夾沒有寫入權限。"
@@ -86,25 +74,10 @@ public class CommandService {
 		"圖片歸檔失敗：找不到暫存圖片，圖片可能已被移動或刪除。"
 			+ "本次未完成歸檔，請重新上傳後再試。";
 
-	private static final String HELP = """
-            📦 資產管理機器人用法
-
-            ① 上傳：把一張或一組圖片傳進群組。
-            ② 歸檔：長按該組任一張圖片 →「引用」→ 輸入大寫資料夾代碼：
-               ZD + 5 位數字 + 可選 1 位大寫英文字母
-               ZD-JY + 5 位數字
-               YJ + 6 位數字
-               符合格式後會直接歸檔整組圖片。
-            ③ 取用：#查 ZD12345
-               （給多個關鍵字時是「同時符合」的意思）
-            ④ 盤點：#標籤 列出目前所有編號與數量
-            ⑤ 連線檢查：標記機器人並輸入 ping
-               會回覆 pong 與本次事件的延遲毫秒數。
-            """;
-
 	private final AssetService assetService;
 	private final LineStorageService lineService;
 	private final ImageArchiveService imageArchiveService;
+	private final AssetArchivePolicy archivePolicy;
 
 	@Value("${app.public-base-url:}")
 	private String publicBaseUrl;
@@ -122,11 +95,13 @@ public class CommandService {
 	public CommandService(
 		AssetService assetService,
 		LineStorageService lineService,
-		ImageArchiveService imageArchiveService
+		ImageArchiveService imageArchiveService,
+		AssetArchivePolicy archivePolicy
 	) {
 		this.assetService = assetService;
 		this.lineService = lineService;
 		this.imageArchiveService = imageArchiveService;
+		this.archivePolicy = archivePolicy;
 	}
 
 	/**
@@ -175,9 +150,9 @@ public class CommandService {
 			handleCommand(trimmed.substring(1).trim(), quotedMessageId, sourceId, replyToken);
 			return;
 		}
-		if (!ARCHIVE_CODE.matcher(trimmed).matches()) {
-			if (ARCHIVE_PREFIX.matcher(trimmed).matches()) {
-				lineService.replyText(replyToken, ARCHIVE_SYNTAX_ERROR);
+		if (!archivePolicy.matches(trimmed)) {
+			if (archivePolicy.hasRecognizedPrefix(trimmed)) {
+				lineService.replyText(replyToken, archiveSyntaxError());
 			}
 			return;
 		}
@@ -204,22 +179,13 @@ public class CommandService {
 	private void handleCommand(String body, String quotedMessageId, String sourceId, String replyToken) {
 		String[] parts = body.split("\\s+");
 		switch (parts[0]) {
-			case "說明", "help", "?" -> lineService.replyText(replyToken, HELP);
+			case "說明", "help", "?" -> lineService.replyText(replyToken, helpMessage());
 			case "標籤", "清單" -> replyTagList(sourceId, replyToken);
 			case "查" -> replySearch(sourceId, Arrays.asList(parts).subList(1, parts.length), replyToken);
 			default -> { /* 未知指令不回應 */ }
 		}
 	}
 
-	/**
-	 *
-	 * <p>三段流程只有 AI 提取是完成的，公式與模板尚未提供，
-	 * 因此這裡把「提取成功但後段未完成」與「提取本身就失敗」分開回報：
-	 * 前者仍會把 AI 讀到的欄位念出來，讓使用者確認辨識品質。
-	 *
-	 * @param quotedMessageId 被引用的規格圖訊息 id
-	 * @param replyToken      回覆權杖
-	 */
 	//#endregion
 
 	//#region 圖片歸檔
@@ -379,7 +345,7 @@ public class CommandService {
 	// 方法：執行 replySearch 方法的處理流程。
 	private void replySearch(String sourceId, List<String> tags, String replyToken) {
 		if (tags.isEmpty()) {
-			lineService.replyText(replyToken, "請指定編號或關鍵字，例如：#查 zd12345");
+			lineService.replyText(replyToken, "請指定編號或關鍵字，例如：#查 " + archivePolicy.example());
 			return;
 		}
 		if (publicBaseUrl == null || publicBaseUrl.isBlank()) {
@@ -406,6 +372,28 @@ public class CommandService {
 			messages.add(LineStorageService.imageMessage(url, url));
 		}
 		lineService.reply(replyToken, messages);
+	}
+
+	// 方法：使用客戶設定的合法範例產生可直接照做的歸檔語法提示。
+	private String archiveSyntaxError() {
+		return "檢測到語法錯誤，請修正後重新執行指令。格式例如：" + archivePolicy.example();
+	}
+
+	// 方法：使用同一份歸檔範例產生不會與實際規則脫節的說明文字。
+	private String helpMessage() {
+		return """
+			📦 資產管理機器人用法
+
+			① 上傳：把一張或一組圖片傳進群組。
+			② 歸檔：長按該組任一張圖片 →「引用」→ 輸入大寫資料夾代碼。
+			   格式範例：%s
+			   符合設定格式後會直接歸檔整組圖片。
+			③ 取用：#查 %s
+			   （給多個關鍵字時是「同時符合」的意思）
+			④ 盤點：#標籤 列出目前所有編號與數量
+			⑤ 連線檢查：標記機器人並輸入 ping
+			   會回覆 pong 與本次事件的延遲毫秒數。
+			""".formatted(archivePolicy.example(), archivePolicy.example());
 	}
 
 	/**

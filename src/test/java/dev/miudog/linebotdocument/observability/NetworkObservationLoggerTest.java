@@ -17,7 +17,7 @@ class NetworkObservationLoggerTest {
 		long startedAt = logger.started("LINE", "reply_message");
 
 		logger.completed("LINE", "reply_message", startedAt, 200);
-		logger.failed("AI", "chat_completion", startedAt, new IOExceptionForTest());
+		logger.failed("CLOUDFLARE", "tunnel_connect", startedAt, new IOExceptionForTest());
 
 		assertThat(output)
 			.contains("event=network_request_started")

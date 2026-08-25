@@ -31,9 +31,42 @@ class CommandServiceArchiveTest {
 
 	CommandService commandService;
 
+	// 方法：以正式預設規則建立指令服務。
 	@BeforeEach
 	void setUp() {
-		commandService = new CommandService(assetService, lineService, archiveService);
+		commandService = new CommandService(
+			assetService,
+			lineService,
+			archiveService,
+			defaultArchivePolicy()
+		);
+	}
+
+	// 方法：驗證客戶可替換歸檔代碼規則，且錯誤提示同步使用設定範例。
+	@Test
+	void usesConfiguredArchiveCodeAndExample() throws Exception {
+		commandService = new CommandService(
+			assetService,
+			lineService,
+			archiveService,
+			new AssetArchivePolicy("AC####")
+		);
+		when(archiveService.archive("M1", "C1", "AC1234"))
+			.thenReturn(new ImageArchiveService.ArchiveResult(ImageArchiveService.ArchiveStatus.ARCHIVED, "AC1234", 1, 1, 0, "01", "01"));
+
+		commandService.handleText("AC1234", "M1", "C1", "U1", "R1");
+		commandService.handleText("AC12", "M2", "C1", "U1", "R2");
+
+		verify(archiveService).archive("M1", "C1", "AC1234");
+		verify(lineService).replyText("R2", "檢測到語法錯誤，請修正後重新執行指令。格式例如：AC1234");
+	}
+
+	// 方法：驗證超過安全長度的文字不會進入客戶 regex 或觸發歸檔流程。
+	@Test
+	void ignoresArchiveCandidatesOverTheSafetyLimit() {
+		commandService.handleText("ZD" + "1".repeat(1000), "M1", "C1", "U1", "R1");
+
+		verifyNoInteractions(archiveService, lineService);
 	}
 
 	@Test
@@ -73,10 +106,10 @@ class CommandServiceArchiveTest {
 		commandService.handleText("YJ12345", "M3", "C1", "U1", "R3");
 		commandService.handleText("ZD20260730", "M4", "C1", "U1", "R4");
 
-		verify(lineService).replyText("R1", "檢測到語法錯誤，請修正後重新執行指令");
-		verify(lineService).replyText("R2", "檢測到語法錯誤，請修正後重新執行指令");
-		verify(lineService).replyText("R3", "檢測到語法錯誤，請修正後重新執行指令");
-		verify(lineService).replyText("R4", "檢測到語法錯誤，請修正後重新執行指令");
+		verify(lineService).replyText("R1", "檢測到語法錯誤，請修正後重新執行指令。格式例如：ZD12345");
+		verify(lineService).replyText("R2", "檢測到語法錯誤，請修正後重新執行指令。格式例如：ZD12345");
+		verify(lineService).replyText("R3", "檢測到語法錯誤，請修正後重新執行指令。格式例如：ZD12345");
+		verify(lineService).replyText("R4", "檢測到語法錯誤，請修正後重新執行指令。格式例如：ZD12345");
 		verifyNoInteractions(archiveService);
 	}
 
@@ -251,5 +284,10 @@ class CommandServiceArchiveTest {
 			"reply-token",
 			"圖片歸檔失敗：資料紀錄發生異常。本次未完成歸檔，請稍後再試；若持續發生請通知管理員。"
 		);
+	}
+
+	// 方法：建立既有 ZD／ZD-JY／YJ 歸檔規則供各測試共用。
+	private AssetArchivePolicy defaultArchivePolicy() {
+		return new AssetArchivePolicy("ZD#####,ZD#####@,ZD-JY#####,YJ######");
 	}
 }

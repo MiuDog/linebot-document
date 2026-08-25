@@ -306,31 +306,6 @@ public class AssetRepository {
 		return found.stream().map(this::withTags).toList();
 	}
 
-	// 方法：依來源、完整部門標籤及部門下的八碼日期資料夾查詢圖片。
-	public List<Asset> searchByDepartmentAndDate(
-		String sourceId,
-		String departmentTag,
-		String compactDate,
-		int limit
-	) {
-		String pathPattern = departmentTag + "/" + compactDate + "/%";
-		List<Asset> found = jdbc.sql("""
-			SELECT DISTINCT a.* FROM asset a
-			JOIN asset_tag at ON at.asset_id = a.id
-			JOIN tag t ON t.id = at.tag_id
-			WHERE a.source_id = ?
-			  AND LOWER(t.name) = ?
-			  AND LOWER(a.file_path) LIKE ?
-			ORDER BY a.created_at ASC, a.id ASC
-			LIMIT ?
-			""")
-			.params(sourceId, departmentTag, pathPattern, limit)
-			.query(AssetRepository::mapAsset)
-			.list();
-
-		return found.stream().map(this::withTags).toList();
-	}
-
 	/**
 	 * 某個來源（群組）目前用過的標籤與各自的資產數，供 {@code #標籤} 指令列出。
 	 *

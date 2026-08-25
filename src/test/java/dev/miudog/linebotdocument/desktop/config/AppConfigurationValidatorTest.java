@@ -30,20 +30,20 @@ class AppConfigurationValidatorTest {
 	void shouldRejectInvalidFieldFormats() {
 		AppConfiguration configuration = validConfiguration()
 			.withValue(AppConfigurationField.PUBLIC_BASE_URL, "http://public.example.com")
-			.withValue(AppConfigurationField.AI_API_URL, "not-a-url")
 			.withValue(AppConfigurationField.SERVER_PORT, "70000")
-			.withValue(AppConfigurationField.AI_TIMEOUT_SECONDS, "0")
-			.withValue(AppConfigurationField.VOICE_COMMANDS_ENABLED, "sometimes")
+			.withValue(AppConfigurationField.ASSETS_SYNC_INTERVAL_MS, "0")
+			.withValue(AppConfigurationField.LINE_REQUEST_TIMEOUT_SECONDS, "0")
+			.withValue(AppConfigurationField.ASSET_ARCHIVE_CODE_FORMATS, "ZD12345")
 			.withValue(AppConfigurationField.SYSTEM_ROOT_PATH, "relative/data");
 
 		assertThat(validator.validate(configuration))
 			.extracting(AppConfigurationValidator.Violation::field)
 			.containsExactlyInAnyOrder(
 				AppConfigurationField.PUBLIC_BASE_URL,
-				AppConfigurationField.AI_API_URL,
 				AppConfigurationField.SERVER_PORT,
-				AppConfigurationField.AI_TIMEOUT_SECONDS,
-				AppConfigurationField.VOICE_COMMANDS_ENABLED,
+				AppConfigurationField.ASSETS_SYNC_INTERVAL_MS,
+				AppConfigurationField.LINE_REQUEST_TIMEOUT_SECONDS,
+				AppConfigurationField.ASSET_ARCHIVE_CODE_FORMATS,
 				AppConfigurationField.SYSTEM_ROOT_PATH
 			);
 	}
@@ -63,4 +63,3 @@ class AppConfigurationValidatorTest {
 			.withValue(AppConfigurationField.LINE_BOT_CHANNEL_SECRET, "test-secret");
 	}
 }
-

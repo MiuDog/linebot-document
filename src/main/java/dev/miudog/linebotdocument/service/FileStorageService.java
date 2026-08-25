@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
  *   <li>{@code image webhook → ImageArchiveService.stage → savePending}</li>
  *   <li>{@code 資料夾代碼 → ImageArchiveService.archive → archivePending／delete}</li>
  *   <li>{@code GET /media → MediaController → resolve}</li>
- *   <li>{@code #報價 → AssetService.contentOf → resolve}</li>
+ *   <li>{@code 圖片查詢 → AssetService → resolve}</li>
  * </ul>
  * 本類別只處理位元組與安全路徑，不建立資產資料列或決定 LINE 回覆。
  */

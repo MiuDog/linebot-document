@@ -17,10 +17,8 @@ public final class CloudflareConnector {
 
 	private static final Logger log = LoggerFactory.getLogger(CloudflareConnector.class);
 	private static final Duration STOP_TIMEOUT = Duration.ofSeconds(3);
-	private static final Duration STARTUP_VERIFY_DELAY = Duration.ofMillis(300);
 
 	private final CloudflareProcessControl process;
-	private final Sleeper sleeper;
 
 	//#endregion
 
@@ -28,16 +26,12 @@ public final class CloudflareConnector {
 
 	// 方法：建立使用正式 cloudflared process 的 connector。
 	public CloudflareConnector() {
-		this(new CloudflareProcess(), Thread::sleep);
+		this(new CloudflareProcess());
 	}
 
-	// 方法：建立可替換程序與等待機制的 connector 供測試使用。
-	CloudflareConnector(
-		CloudflareProcessControl process,
-		Sleeper sleeper
-	) {
+	// 方法：建立可替換程序的 connector 供測試使用。
+	CloudflareConnector(CloudflareProcessControl process) {
 		this.process = Objects.requireNonNull(process, "cloudflared process 不可為 null");
-		this.sleeper = Objects.requireNonNull(sleeper, "cloudflared 等待機制不可為 null");
 	}
 
 	//#endregion
@@ -79,13 +73,17 @@ public final class CloudflareConnector {
 		}
 
 		try {
-			process.start(agent, token);
+			CloudflareProtocol protocol = CloudflareProtocol.parse(
+				configuration.value(AppConfigurationField.CLOUDFLARE_PROTOCOL)
+			);
+			process.start(agent, token, protocol);
 
-			// 短暫等待驗證 child process 正常運行
-			sleeper.sleep(STARTUP_VERIFY_DELAY);
+			// 外部函式：等待 cloudflared 官方 readiness endpoint，避免只以程序存活誤判連線成功。
+			if (!process.awaitReady(startupTimeout)) {
+				String diagnostic = process.diagnostic();
+				String detail = diagnostic.isBlank() ? "未建立 Cloudflare Edge 連線" : diagnostic;
 
-			if (process.status() != CloudflareStatus.RUNNING) {
-				throw new CloudflareConnectorException("cloudflared agent 已提前結束", null);
+				throw new CloudflareConnectorException("cloudflared 尚未就緒：" + detail, null);
 			}
 
 			String publicUrl = configuration.value(AppConfigurationField.PUBLIC_BASE_URL);
@@ -94,12 +92,6 @@ public final class CloudflareConnector {
 			log.info("event=cloudflare_tunnel_ready publicUrl={}", publicUrl);
 
 			return new CloudflareConnection(true, publicUrl, configuration);
-		}
-		catch (InterruptedException exception) {
-			Thread.currentThread().interrupt();
-			process.stop(STOP_TIMEOUT);
-
-			throw new CloudflareConnectorException("等待 cloudflared 啟動時被中斷", exception);
 		}
 		catch (RuntimeException exception) {
 			process.stop(STOP_TIMEOUT);
@@ -116,14 +108,4 @@ public final class CloudflareConnector {
 	}
 
 	//#endregion
-
-	/**
-	 * 隔離等待以提供快速且可重現的測試。
-	 */
-	@FunctionalInterface
-	interface Sleeper {
-
-		// 方法：暫停指定期間。
-		void sleep(Duration duration) throws InterruptedException;
-	}
 }

@@ -82,7 +82,7 @@ UninstPage Custom un.PurgePageCreate un.PurgePageLeave
 
 #region [初始化]
 
-# 方法：偵測既有安裝及非阻擋式 Excel／印表機先決條件。
+# 方法：偵測既有安裝，決定是否顯示維護模式。
 Function .onInit
 	StrCpy $WasInstalled "0"
 	ReadRegStr $ExistingInstallDir HKCU "${PRODUCT_KEY}" "InstallLocation"
@@ -91,21 +91,6 @@ Function .onInit
 		StrCpy $WasInstalled "1"
 	${EndIf}
 
-	IfSilent InitializationDone
-
-	ReadRegStr $0 HKCR "Excel.Application\CLSID" ""
-
-	${If} $0 == ""
-		MessageBox MB_ICONEXCLAMATION|MB_OK "未偵測到 Microsoft Excel。App 仍可安裝，但報價 PDF 功能需安裝 Excel 後才能使用。"
-	${EndIf}
-
-	ReadRegStr $1 HKCU "Software\Microsoft\Windows NT\CurrentVersion\Windows" "Device"
-
-	${If} $1 == ""
-		MessageBox MB_ICONEXCLAMATION|MB_OK "未偵測到預設印表機。App 仍可安裝，但報價 PDF 功能需可用印表機。"
-	${EndIf}
-
-	InitializationDone:
 FunctionEnd
 
 # 方法：支援驗收腳本以明確 /PURGE=1 參數測試完整資料清除。

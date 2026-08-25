@@ -27,17 +27,17 @@ class ConfigurationWizardModelTest {
 	@Test
 	void shouldPreserveExistingSecretWhenMaskedOrBlank() {
 		AppConfiguration original = validConfiguration()
-			.withValue(AppConfigurationField.AI_API_KEY, "existing-secret");
+			.withValue(AppConfigurationField.ASSETS_SYNC_TOKEN, "existing-secret");
 		ConfigurationWizardModel model = new ConfigurationWizardModel(original);
 
-		assertThat(model.displayValue(AppConfigurationField.AI_API_KEY))
+		assertThat(model.displayValue(AppConfigurationField.ASSETS_SYNC_TOKEN))
 			.isEqualTo(ConfigurationWizardModel.SECRET_MASK);
 
-		model.update(AppConfigurationField.AI_API_KEY, "");
-		assertThat(model.configuration().value(AppConfigurationField.AI_API_KEY)).isEqualTo("existing-secret");
+		model.update(AppConfigurationField.ASSETS_SYNC_TOKEN, "");
+		assertThat(model.configuration().value(AppConfigurationField.ASSETS_SYNC_TOKEN)).isEqualTo("existing-secret");
 
-		model.update(AppConfigurationField.AI_API_KEY, ConfigurationWizardModel.SECRET_MASK);
-		assertThat(model.configuration().value(AppConfigurationField.AI_API_KEY)).isEqualTo("existing-secret");
+		model.update(AppConfigurationField.ASSETS_SYNC_TOKEN, ConfigurationWizardModel.SECRET_MASK);
+		assertThat(model.configuration().value(AppConfigurationField.ASSETS_SYNC_TOKEN)).isEqualTo("existing-secret");
 	}
 
 	// 方法：輸入新密碼時以新值取代舊機密並通過驗證。

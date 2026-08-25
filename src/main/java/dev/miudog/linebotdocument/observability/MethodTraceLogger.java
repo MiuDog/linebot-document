@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 @Aspect
 @Component
-@ConditionalOnProperty(name = "app.observability.method-tracing-enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.observability.method-tracing-enabled", havingValue = "true", matchIfMissing = false)
 public class MethodTraceLogger {
 
 	private static final Logger log = LoggerFactory.getLogger("FLOW_TRACE");
@@ -53,11 +53,11 @@ public class MethodTraceLogger {
 		String requestId = MDC.get("requestId");
 		long startedAt = System.nanoTime();
 		// 日誌：記錄方法開始執行。
-		log.info("event=method_entered requestId={} class={} method={}", requestId, className, methodName);
+		log.debug("event=method_entered requestId={} class={} method={}", requestId, className, methodName);
 		try {
 			Object result = joinPoint.proceed();
 			// 日誌：記錄方法完成與執行耗時。
-			log.info(
+			log.debug(
 				"event=method_completed requestId={} class={} method={} durationMs={}",
 				requestId,
 				className,

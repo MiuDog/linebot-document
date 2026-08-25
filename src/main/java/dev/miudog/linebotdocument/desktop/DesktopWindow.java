@@ -1,14 +1,10 @@
 package dev.miudog.linebotdocument.desktop;
 
 import java.awt.BorderLayout;
-import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.net.URI;
 import javax.swing.JComponent;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -94,13 +90,12 @@ public final class DesktopWindow implements DesktopWindowHandle {
 		frame.dispose();
 	}
 
-	// 方法：建立狀態區、網址區與四項主要操作按鈕。
+	// 方法：建立狀態區、網址區與 App 內三項主要操作按鈕。
 	private void buildWindow(JComponent logPanel) {
 		JPanel root = new JPanel(new BorderLayout(12, 12));
 		JPanel values = new JPanel(new GridLayout(4, 2, 8, 8));
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		JButton openLocalButton = new JButton("開啟本機管理頁");
-		JButton settingsButton = new JButton("設定");
+		JButton settingsButton = new JButton("編輯設定");
 		JButton restartButton = new JButton("重新啟動");
 		JButton exitButton = new JButton("結束");
 		JTabbedPane tabs = new JTabbedPane();
@@ -113,11 +108,9 @@ public final class DesktopWindow implements DesktopWindowHandle {
 		values.add(publicUrlValue);
 		values.add(new JLabel("LINE Callback 網址"));
 		values.add(callbackUrlValue);
-		openLocalButton.addActionListener(event -> openLocalUrl());
 		settingsButton.addActionListener(event -> actions.settings().run());
 		restartButton.addActionListener(event -> actions.restart().run());
 		exitButton.addActionListener(event -> actions.exit().run());
-		buttons.add(openLocalButton);
 		buttons.add(settingsButton);
 		buttons.add(restartButton);
 		buttons.add(exitButton);
@@ -158,20 +151,6 @@ public final class DesktopWindow implements DesktopWindowHandle {
 		localUrlValue.setText(snapshot.localUrl());
 		publicUrlValue.setText(snapshot.publicUrl());
 		callbackUrlValue.setText(snapshot.callbackUrl());
-	}
-
-	// 方法：使用系統預設瀏覽器開啟目前本機管理頁。
-	private void openLocalUrl() {
-		try {
-			// 外部函式：交由 Windows 預設瀏覽器開啟本機管理頁。
-			Desktop.getDesktop().browse(URI.create(model.snapshot().localUrl()));
-		}
-		catch (Exception exception) {
-			// 外部函式：瀏覽器不可用時把網址複製到目前使用者剪貼簿。
-			Toolkit.getDefaultToolkit()
-				.getSystemClipboard()
-				.setContents(new StringSelection(model.snapshot().localUrl()), null);
-		}
 	}
 
 	// 方法：強制主視窗元件只在 Swing EDT 建立或操作。

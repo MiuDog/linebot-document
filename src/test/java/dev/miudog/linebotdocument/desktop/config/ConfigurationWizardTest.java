@@ -23,7 +23,7 @@ class ConfigurationWizardTest {
 
 		assertThat(wizard.content()).isNotNull();
 		assertThat(wizard.tabs().getTabCount()).isEqualTo(AppConfigurationField.Group.values().length);
-		assertThat(wizard.fieldComponent(AppConfigurationField.AI_API_KEY)).isInstanceOf(JPasswordField.class);
+		assertThat(wizard.fieldComponent(AppConfigurationField.ASSETS_SYNC_TOKEN)).isInstanceOf(JPasswordField.class);
 		assertThat(wizard.tabs()).isInstanceOf(JTabbedPane.class);
 	}
 
@@ -36,12 +36,12 @@ class ConfigurationWizardTest {
 			configuration -> saved[0] = configuration
 		);
 
-		wizard.fieldComponent(AppConfigurationField.AI_MODEL).setText("gpt-edited");
+		wizard.fieldComponent(AppConfigurationField.QUERY_MAX_RESULTS).setText("3");
 		ConfigurationWizardResult result = wizard.save(false);
 
 		assertThat(result.saved()).isTrue();
 		assertThat(result.restartRequired()).isTrue();
-		assertThat(saved[0].value(AppConfigurationField.AI_MODEL)).isEqualTo("gpt-edited");
+		assertThat(saved[0].value(AppConfigurationField.QUERY_MAX_RESULTS)).isEqualTo("3");
 	}
 
 	// 方法：取消首次設定時不保存且不要求重新啟動。

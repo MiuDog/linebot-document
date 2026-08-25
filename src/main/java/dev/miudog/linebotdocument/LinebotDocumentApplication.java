@@ -18,10 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * Spring 容器會先建立資產根目錄與 SQLite 連線，再初始化資料表；
  * 所有 Bean 就緒後才輸出不含金鑰的設定狀態。
  *
- * <p>LINE、HTTP 與報價的完整事件鏈請見
- * {@code docs/06-event-call-chains.md}。
- *
- * <p>完整的類別導覽請見 {@code docs/reference/index.md}。
+ * <p>桌面設定、LINE Webhook、圖片歸檔與查詢共同組成本產品流程。
  */
 @SpringBootApplication
 @EnableScheduling

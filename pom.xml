@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>dev.miudog</groupId>
 	<artifactId>linebot-document</artifactId>
-	<version>0.1.8</version>
+	<version>0.2.0</version>
 	<name>linebot-document</name>
-	<description>LINE 群組圖片資產收錄、取用與語音任務機器人</description>
+	<description>LINE 群組圖片資產收錄、編號歸檔與查詢取用工具</description>
 	<url/>
 	<licenses>
 		<license/>

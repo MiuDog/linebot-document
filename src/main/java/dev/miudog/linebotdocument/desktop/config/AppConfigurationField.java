@@ -14,24 +14,15 @@ public enum AppConfigurationField {
 	SYSTEM_ROOT_PATH("SYSTEM_ROOT_PATH", "app.system.root", "資料根目錄", Group.SYSTEM, false, true, "", Format.ABSOLUTE_PATH),
 	PUBLIC_BASE_URL("PUBLIC_BASE_URL", "app.public-base-url", "公開 HTTPS 網址", Group.SYSTEM, false, false, "", Format.HTTPS_URL),
 	QUERY_MAX_RESULTS("QUERY_MAX_RESULTS", "app.query.max-results", "單次圖片上限", Group.SYSTEM, false, false, "4", Format.POSITIVE_INTEGER),
+	ASSET_ARCHIVE_CODE_FORMATS("ASSET_ARCHIVE_CODE_FORMATS", "app.archive.code-formats", "歸檔代碼格式（#數字／@大寫字母）", Group.SYSTEM, false, false, "ZD#####,ZD#####@,ZD-JY#####,YJ######", Format.ARCHIVE_CODE_FORMATS),
 	LINE_BOT_CHANNEL_TOKEN("LINE_BOT_CHANNEL_TOKEN", "line.bot.channel-token", "LINE Channel Token", Group.LINE, true, true, "", Format.NONE),
 	LINE_BOT_CHANNEL_SECRET("LINE_BOT_CHANNEL_SECRET", "line.bot.channel-secret", "LINE Channel Secret", Group.LINE, true, true, "", Format.NONE),
+	LINE_CONNECT_TIMEOUT_SECONDS("LINE_CONNECT_TIMEOUT_SECONDS", "app.line.connect-timeout-seconds", "LINE 連線逾時秒數", Group.LINE, false, false, "10", Format.POSITIVE_INTEGER),
+	LINE_REQUEST_TIMEOUT_SECONDS("LINE_REQUEST_TIMEOUT_SECONDS", "app.line.request-timeout-seconds", "LINE 請求逾時秒數", Group.LINE, false, false, "30", Format.POSITIVE_INTEGER),
 	ASSETS_SYNC_ENABLED("ASSETS_SYNC_ENABLED", "app.storage.sync-enabled", "啟用資產同步", Group.LINE, false, false, "false", Format.BOOLEAN),
 	ASSETS_SYNC_INTERVAL_MS("ASSETS_SYNC_INTERVAL_MS", "app.storage.sync-interval-ms", "資產同步週期", Group.LINE, false, false, "30000", Format.POSITIVE_INTEGER),
 	ASSETS_SYNC_TOKEN("ASSETS_SYNC_TOKEN", "app.storage.sync-token", "資產同步 Token", Group.LINE, true, false, "", Format.NONE),
-	AI_API_URL("AI_API_URL", "app.ai.api-url", "AI API 網址", Group.AI, false, false, "https://api.openai.com/v1", Format.HTTP_URL),
-	AI_API_KEY("AI_API_KEY", "app.ai.api-key", "AI API Key", Group.AI, true, false, "", Format.NONE),
-	AI_MODEL("AI_MODEL", "app.ai.model", "AI Model", Group.AI, false, false, "", Format.NONE),
-	AI_REQUIRED_FIELDS("AI_REQUIRED_FIELDS", "app.ai.required-fields", "AI 必要欄位", Group.AI, false, false, "", Format.NONE),
-	AI_TIMEOUT_SECONDS("AI_TIMEOUT_SECONDS", "app.ai.timeout-seconds", "AI Timeout 秒數", Group.AI, false, false, "60", Format.POSITIVE_INTEGER),
-	AI_PRICE_CURRENCY("AI_PRICE_CURRENCY", "app.ai.pricing.currency", "AI 計價幣別", Group.AI, false, false, "USD", Format.NONE),
-	AI_INPUT_RATE_PER_MILLION("AI_INPUT_RATE_PER_MILLION", "app.ai.pricing.input-per-million", "AI 輸入單價", Group.AI, false, false, "", Format.NON_NEGATIVE_DECIMAL),
-	AI_CACHED_INPUT_RATE_PER_MILLION("AI_CACHED_INPUT_RATE_PER_MILLION", "app.ai.pricing.cached-input-per-million", "AI 快取輸入單價", Group.AI, false, false, "", Format.NON_NEGATIVE_DECIMAL),
-	AI_OUTPUT_RATE_PER_MILLION("AI_OUTPUT_RATE_PER_MILLION", "app.ai.pricing.output-per-million", "AI 輸出單價", Group.AI, false, false, "", Format.NON_NEGATIVE_DECIMAL),
-	VOICE_COMMANDS_ENABLED("VOICE_COMMANDS_ENABLED", "app.voice.enabled", "啟用語音命令", Group.VOICE, false, false, "false", Format.BOOLEAN),
-	VOICE_MCP_SERVER_URL("VOICE_MCP_SERVER_URL", "app.voice.mcp-server-url", "語音 MCP 網址", Group.VOICE, false, false, "", Format.HTTP_URL),
-	VOICE_MCP_AUTH_TOKEN("VOICE_MCP_AUTH_TOKEN", "app.voice.mcp-auth-token", "語音 MCP Token", Group.VOICE, true, false, "", Format.NONE),
-	METHOD_TRACING_ENABLED("METHOD_TRACING_ENABLED", "app.observability.method-tracing-enabled", "啟用方法追蹤", Group.LOG, false, false, "true", Format.BOOLEAN),
+	METHOD_TRACING_ENABLED("METHOD_TRACING_ENABLED", "app.observability.method-tracing-enabled", "啟用方法追蹤", Group.LOG, false, false, "false", Format.BOOLEAN),
 	LOG_LEVEL_ROOT("LOG_LEVEL_ROOT", "logging.level.root", "Log Level", Group.LOG, false, false, "INFO", Format.LOG_LEVEL),
 	LOG_MAX_FILE_SIZE("LOG_MAX_FILE_SIZE", "LOG_MAX_FILE_SIZE", "Log 單檔大小", Group.LOG, false, false, "20MB", Format.DATA_SIZE),
 	LOG_MAX_HISTORY("LOG_MAX_HISTORY", "LOG_MAX_HISTORY", "Log 保留天數", Group.LOG, false, false, "30", Format.POSITIVE_INTEGER),
@@ -42,7 +33,8 @@ public enum AppConfigurationField {
 	NGROK_AUTHTOKEN("NGROK_AUTHTOKEN", "app.desktop.ngrok.authtoken", "ngrok Authtoken", Group.NGROK, true, false, "", Format.NONE),
 	CLOUDFLARE_ENABLED("CLOUDFLARE_ENABLED", "app.desktop.cloudflare.enabled", "使用 Cloudflare", Group.CLOUDFLARE, false, false, "false", Format.BOOLEAN),
 	CLOUDFLARE_AGENT_PATH("CLOUDFLARE_AGENT_PATH", "app.desktop.cloudflare.agent-path", "cloudflared 執行檔", Group.CLOUDFLARE, false, false, "", Format.ABSOLUTE_PATH),
-	CLOUDFLARE_TUNNEL_TOKEN("CLOUDFLARE_TUNNEL_TOKEN", "app.desktop.cloudflare.tunnel-token", "Cloudflare Tunnel Token", Group.CLOUDFLARE, true, false, "", Format.NONE);
+	CLOUDFLARE_TUNNEL_TOKEN("CLOUDFLARE_TUNNEL_TOKEN", "app.desktop.cloudflare.tunnel-token", "Cloudflare Tunnel Token", Group.CLOUDFLARE, true, false, "", Format.NONE),
+	CLOUDFLARE_PROTOCOL("CLOUDFLARE_PROTOCOL", "app.desktop.cloudflare.protocol", "Cloudflare 傳輸協定", Group.CLOUDFLARE, false, false, "http2", Format.CLOUDFLARE_PROTOCOL);
 
 	//#region 欄位
 
@@ -146,8 +138,6 @@ public enum AppConfigurationField {
 	public enum Group {
 		SYSTEM,
 		LINE,
-		AI,
-		VOICE,
 		LOG,
 		NGROK,
 		CLOUDFLARE
@@ -167,6 +157,8 @@ public enum AppConfigurationField {
 		HTTPS_URL,
 		ABSOLUTE_PATH,
 		LOG_LEVEL,
-		DATA_SIZE
+		DATA_SIZE,
+		ARCHIVE_CODE_FORMATS,
+		CLOUDFLARE_PROTOCOL
 	}
 }

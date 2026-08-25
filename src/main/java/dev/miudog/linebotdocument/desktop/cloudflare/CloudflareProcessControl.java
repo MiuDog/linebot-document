@@ -11,8 +11,15 @@ public interface CloudflareProcessControl {
 	// 方法：以 agent 與 Token 啟動 cloudflared child。
 	void start(
 		Path agent,
-		String tunnelToken
+		String tunnelToken,
+		CloudflareProtocol protocol
 	);
+
+	// 方法：在 timeout 內等待 cloudflared 官方 readiness endpoint 成功。
+	boolean awaitReady(Duration timeout);
+
+	// 方法：取得最後一筆已清理的 cloudflared 診斷。
+	String diagnostic();
 
 	// 方法：在 timeout 內停止本 App 建立的 child。
 	void stop(Duration timeout);

@@ -34,7 +34,7 @@ class UnifiedEnvironmentConfigurationTest {
 		assertThat(compose)
 			.contains("${SYSTEM_ROOT_PATH:-./system-data}:/data/system-root")
 			.contains("SYSTEM_ROOT_PATH=/data/system-root")
-			.contains("LOCAL_ADMIN_CONTAINER_HOST_ACCESS=true")
+			.doesNotContain("LOCAL_ADMIN_CONTAINER_HOST_ACCESS")
 			.contains("127.0.0.1:8088:8088")
 			.doesNotContain("ASSETS_ROOT=")
 			.doesNotContain("QUOTATION_ROOT_PATH=");
@@ -44,29 +44,52 @@ class UnifiedEnvironmentConfigurationTest {
 			.doesNotContain("VOLUME /data/assets");
 	}
 
+	// 方法：設定只能由桌面 App 開啟，不保留網頁設定按鈕、瀏覽器呼叫或頁面資源。
 	@Test
-	void sharesTheCommonAiSettingsWithVoiceCommands() throws IOException {
+	void usesDesktopAppAsTheOnlyConfigurationSurface() throws IOException {
+		String desktopWindow = read("src/main/java/dev/miudog/linebotdocument/desktop/DesktopWindow.java");
+
+		assertThat(desktopWindow)
+			.contains("new JButton(\"編輯設定\")")
+			.doesNotContain("開啟本機管理頁")
+			.doesNotContain("Desktop.getDesktop().browse");
+		assertThat(Path.of("src/main/resources/static/admin"))
+			.doesNotExist();
+		assertThat(Path.of("src/main/resources/templates/admin"))
+			.doesNotExist();
+	}
+
+	// 方法：Windows 發佈內容只能描述圖片資產功能，不夾帶報價硬體警告、選單或資料表。
+	@Test
+	void packagesOnlyTheDocumentProductExperience() throws IOException {
+		String installer = read("packaging/windows/installer.nsi");
+		String packageScript = read("scripts/package-windows-app.ps1");
+		String schema = read("src/main/resources/schema.sql");
+
+		assertThat(installer)
+			.doesNotContain("Excel.Application")
+			.doesNotContain("預設印表機")
+			.doesNotContain("報價 PDF");
+		assertThat(packageScript).doesNotContain("語音任務機器人");
+		assertThat(schema).doesNotContain("admin_audit_log");
+		assertThat(Path.of("src/main/resources/line/rich-menu.json")).doesNotExist();
+	}
+
+	// 方法：圖片資產產品不得載入 AI、語音、MCP 或報價設定。
+	@Test
+	void keepsOnlyImageAssetProductSettings() throws IOException {
 		String environment = read(".env.example");
 		String properties = read("src/main/resources/application.properties");
 
 		assertThat(environment)
-			.contains("AI_API_URL=")
-			.contains("AI_API_KEY=")
-			.contains("AI_MODEL=")
-			.contains("AI_TIMEOUT_SECONDS=60")
-			.doesNotContain("OPENAI_API_KEY=")
-			.doesNotContain("OPENAI_API_BASE_URL=")
-			.doesNotContain("VOICE_TASK_MODEL=")
-			.doesNotContain("VOICE_AI_TIMEOUT_SECONDS=");
+			.doesNotContain("AI_")
+			.doesNotContain("VOICE_")
+			.doesNotContain("MCP_")
+			.doesNotContain("QUOTATION_");
 		assertThat(properties)
-			.contains("app.voice.openai-base-url=${AI_API_URL:https://api.openai.com/v1}")
-			.contains("app.voice.openai-api-key=${AI_API_KEY:}")
-			.contains("app.voice.task-model=${AI_MODEL:gpt-5.6-terra}")
-			.contains("app.voice.timeout-seconds=${AI_TIMEOUT_SECONDS:60}")
-			.doesNotContain("OPENAI_API_KEY")
-			.doesNotContain("OPENAI_API_BASE_URL")
-			.doesNotContain("VOICE_TASK_MODEL")
-			.doesNotContain("VOICE_AI_TIMEOUT_SECONDS");
+			.doesNotContain("app.ai.")
+			.doesNotContain("app.voice.")
+			.doesNotContain("app.quotation.");
 	}
 
 	@Test

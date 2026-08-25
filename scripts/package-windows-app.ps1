@@ -134,7 +134,7 @@ $JpackageArguments = @(
 	"--name", $ProductName,
 	"--app-version", $Version,
 	"--vendor", "MiuDog",
-	"--description", "LINE 群組圖片資產收錄、取用與語音任務機器人",
+	"--description", "LINE 群組圖片資產收錄、編號歸檔與查詢取用工具",
 	"--input", $InputRoot,
 	"--main-jar", "app.jar",
 	"--dest", $ImageRoot,

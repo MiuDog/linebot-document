@@ -10,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +20,13 @@ import java.util.UUID;
  * 【職責】資產生命週期的協調者：收錄 → 歸檔 → 查詢。
  *
  * <p>目前 LINE 圖片的暫存與確認歸檔由 {@link ImageArchiveService} 負責；
- * 本類別負責正式資產的查詢、內容讀取，以及保留的直接收錄與掛標籤入口。
+ * 本類別負責正式資產的查詢，以及保留的直接收錄與掛標籤入口。
  * 上層的 {@link CommandService} 因此不需要知道檔案或 SQL 的實作細節。
  *
  * <p><b>目前事件呼叫鏈：</b>
  * <ul>
  *   <li>{@code #查／#標籤 → CommandService → AssetService → AssetRepository}</li>
  *   <li>{@code GET /media → MediaController → findByShareToken → AssetRepository}</li>
- *   <li>{@code #報價 → CommandService → contentOf → FileStorageService.resolve}</li>
  * </ul>
  *
  * <p>{@link #ingest} 與 {@link #tag} 仍可由 Java 程式直接呼叫，
@@ -44,7 +41,6 @@ public class AssetService {
 	private final AssetRepository repository;
 	private final FileStorageService fileStorage;
 	private final AssetFileReconciliationService reconciliationService;
-	private final AssetPathResolver paths;
 
 	/**
 	 * @param repository  資產索引的資料庫存取
@@ -55,25 +51,11 @@ public class AssetService {
 	public AssetService(
 		AssetRepository repository,
 		FileStorageService fileStorage,
-		AssetFileReconciliationService reconciliationService,
-		AssetPathResolver paths
-	) {
-		this.repository = repository;
-		this.fileStorage = fileStorage;
-		this.reconciliationService = reconciliationService;
-		this.paths = paths;
-	}
-
-	// 方法：保留只使用一般資產根目錄的既有聚焦測試建構介面。
-	AssetService(
-		AssetRepository repository,
-		FileStorageService fileStorage,
 		AssetFileReconciliationService reconciliationService
 	) {
 		this.repository = repository;
 		this.fileStorage = fileStorage;
 		this.reconciliationService = reconciliationService;
-		this.paths = null;
 	}
 
 	/**
@@ -182,21 +164,6 @@ public class AssetService {
 		return repository.searchByTags(sourceId, tags, limit);
 	}
 
-	// 方法：依群組、部門標籤及正式歸檔日期查詢語音任務所需圖片。
-	public List<Asset> searchByDepartmentAndDate(
-		String sourceId,
-		String departmentTag,
-		String compactDate,
-		int limit
-	) {
-		return repository.searchByDepartmentAndDate(
-			sourceId,
-			departmentTag,
-			compactDate,
-			limit
-		);
-	}
-
 	/**
 	 * 列出某群組用過的編號／標籤與各自數量，供盤點使用。
 	 *
@@ -241,20 +208,4 @@ public class AssetService {
 		return repository.findByMessageId(messageId);
 	}
 
-	/**
-	 * 讀出資產圖片的完整位元組，供報價流程送給 AI 辨識。
-	 *
-	 * <p>刻意一次讀進記憶體而非回傳串流：呼叫端需要把同一份位元組
-	 * 先送給模型、之後再貼進 PDF，串流只能讀一次。
-	 *
-	 * @param asset 目標資產
-	 * @return 圖片位元組
-	 * @throws IOException 檔案不存在或讀取失敗
-	 */
-	// 方法：執行 contentOf 方法的處理流程。
-	public byte[] contentOf(Asset asset) throws IOException {
-		// 外部呼叫：使用 Java NIO 一次讀取圖片內容，供 AI 與 PDF 流程重複使用。
-		Path path = paths == null ? fileStorage.resolve(asset.filePath()) : paths.resolve(asset);
-		return Files.readAllBytes(path);
-	}
 }

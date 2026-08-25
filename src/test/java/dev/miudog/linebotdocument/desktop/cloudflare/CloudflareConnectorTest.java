@@ -26,7 +26,7 @@ class CloudflareConnectorTest {
 	@Test
 	void shouldPassThroughWhenCloudflareDisabled() {
 		CloudflareProcessControl process = mock(CloudflareProcessControl.class);
-		CloudflareConnector connector = new CloudflareConnector(process, duration -> {});
+		CloudflareConnector connector = new CloudflareConnector(process);
 		AppConfiguration configuration = AppConfiguration.defaults(temporaryDirectory)
 			.withValue(AppConfigurationField.CLOUDFLARE_ENABLED, "false")
 			.withValue(AppConfigurationField.PUBLIC_BASE_URL, "https://my-domain.example.com");
@@ -44,9 +44,9 @@ class CloudflareConnectorTest {
 		Files.write(agent, new byte[] {0});
 
 		CloudflareProcessControl process = mock(CloudflareProcessControl.class);
-		when(process.status()).thenReturn(CloudflareStatus.RUNNING);
+		when(process.awaitReady(Duration.ofSeconds(5))).thenReturn(true);
 
-		CloudflareConnector connector = new CloudflareConnector(process, duration -> {});
+		CloudflareConnector connector = new CloudflareConnector(process);
 		AppConfiguration configuration = AppConfiguration.defaults(temporaryDirectory)
 			.withValue(AppConfigurationField.CLOUDFLARE_ENABLED, "true")
 			.withValue(AppConfigurationField.CLOUDFLARE_AGENT_PATH, agent.toString())
@@ -57,7 +57,7 @@ class CloudflareConnectorTest {
 
 		assertThat(connection.enabled()).isTrue();
 		assertThat(connection.publicUrl()).isEqualTo("https://my-domain.example.com");
-		verify(process).start(agent, "ey-token");
+		verify(process).start(agent, "ey-token", CloudflareProtocol.HTTP2);
 	}
 
 	// 方法：啟用但缺少 Token 時應拋出例外。
@@ -67,7 +67,7 @@ class CloudflareConnectorTest {
 		Files.write(agent, new byte[] {0});
 
 		CloudflareProcessControl process = mock(CloudflareProcessControl.class);
-		CloudflareConnector connector = new CloudflareConnector(process, duration -> {});
+		CloudflareConnector connector = new CloudflareConnector(process);
 		AppConfiguration configuration = AppConfiguration.defaults(temporaryDirectory)
 			.withValue(AppConfigurationField.CLOUDFLARE_ENABLED, "true")
 			.withValue(AppConfigurationField.CLOUDFLARE_AGENT_PATH, agent.toString())
@@ -82,10 +82,30 @@ class CloudflareConnectorTest {
 	@Test
 	void shouldStopProcessOnConnectorStop() {
 		CloudflareProcessControl process = mock(CloudflareProcessControl.class);
-		CloudflareConnector connector = new CloudflareConnector(process, duration -> {});
+		CloudflareConnector connector = new CloudflareConnector(process);
 
 		connector.stop();
 
+		verify(process).stop(Duration.ofSeconds(3));
+	}
+
+	// 方法：readiness 未通過時要帶回安全診斷並停止 child。
+	@Test
+	void shouldFailWhenTheTunnelNeverBecomesReady() throws Exception {
+		Path agent = temporaryDirectory.resolve("cloudflared.exe").toAbsolutePath();
+		Files.write(agent, new byte[] {0});
+		CloudflareProcessControl process = mock(CloudflareProcessControl.class);
+		when(process.awaitReady(Duration.ofSeconds(2))).thenReturn(false);
+		when(process.diagnostic()).thenReturn("TCP 7844 連線逾時");
+		CloudflareConnector connector = new CloudflareConnector(process);
+		AppConfiguration configuration = AppConfiguration.defaults(temporaryDirectory)
+			.withValue(AppConfigurationField.CLOUDFLARE_ENABLED, "true")
+			.withValue(AppConfigurationField.CLOUDFLARE_AGENT_PATH, agent.toString())
+			.withValue(AppConfigurationField.CLOUDFLARE_TUNNEL_TOKEN, "ey-token");
+
+		assertThatThrownBy(() -> connector.start(configuration, Duration.ofSeconds(2)))
+			.isInstanceOf(CloudflareConnectorException.class)
+			.hasMessageContaining("TCP 7844");
 		verify(process).stop(Duration.ofSeconds(3));
 	}
 }

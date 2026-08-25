@@ -316,8 +316,6 @@ public final class ConfigurationWizard implements AutoCloseable {
 		return switch (group) {
 			case SYSTEM -> "系統";
 			case LINE -> "LINE";
-			case AI -> "AI";
-			case VOICE -> "語音";
 			case LOG -> "記錄";
 			case NGROK -> "ngrok";
 			case CLOUDFLARE -> "Cloudflare";

@@ -3,7 +3,6 @@ package dev.miudog.linebotdocument.controller;
 import dev.miudog.linebotdocument.service.CommandService;
 import dev.miudog.linebotdocument.service.ImageArchiveService;
 import dev.miudog.linebotdocument.service.LineStorageService;
-import dev.miudog.linebotdocument.service.voice.VoiceCommandService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +38,6 @@ class LineWebhookControllerTest {
 	@Mock
 	LineStorageService lineService;
 
-	@Mock
-	VoiceCommandService voiceCommandService;
-
 	LineWebhookController controller;
 
 	@BeforeEach
@@ -49,8 +45,7 @@ class LineWebhookControllerTest {
 		controller = new LineWebhookController(
 			commandService,
 			archiveService,
-			lineService,
-			voiceCommandService
+			lineService
 		);
 		ReflectionTestUtils.setField(controller, "channelSecret", CHANNEL_SECRET);
 	}
@@ -64,7 +59,7 @@ class LineWebhookControllerTest {
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 		verify(commandService, never()).handleText(any(), any(), any(), any(), any());
-		verifyNoInteractions(archiveService, lineService, voiceCommandService);
+		verifyNoInteractions(archiveService, lineService);
 	}
 
 	// 方法：簽章不符時拒絕請求，不觸發任何下游服務。
@@ -73,12 +68,12 @@ class LineWebhookControllerTest {
 		var response = controller.handleWebhook("wrong-signature", "{\"events\":[]}");
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-		verifyNoInteractions(archiveService, lineService, voiceCommandService);
+		verifyNoInteractions(archiveService, lineService);
 	}
 
-	// 方法：群組語音轉交語音任務服務。
+	// 方法：圖片資產產品安靜忽略群組語音，不啟動其他功能。
 	@Test
-	void routesGroupAudioToTheVoiceCommandService() throws Exception {
+	void ignoresGroupAudioBecauseThisProductStoresImagesOnly() throws Exception {
 		String payload = """
 			{"events":[{
 			  "type":"message",
@@ -91,7 +86,7 @@ class LineWebhookControllerTest {
 		var response = controller.handleWebhook(signature(payload), payload);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		verify(voiceCommandService).handleGroupAudio("A1", "C1", "reply-token");
+		verifyNoInteractions(commandService, archiveService, lineService);
 	}
 
 	// 方法：語音任務僅限群組，一對一語音不得觸發任何處理。
@@ -108,7 +103,7 @@ class LineWebhookControllerTest {
 
 		controller.handleWebhook(signature(payload), payload);
 
-		verifyNoInteractions(voiceCommandService);
+		verifyNoInteractions(commandService, archiveService, lineService);
 	}
 
 	// 方法：群組文字訊息轉交指令服務處理。
@@ -149,7 +144,7 @@ class LineWebhookControllerTest {
 		var response = controller.handleWebhook(signature(payload), payload);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-		verifyNoInteractions(commandService, archiveService, lineService, voiceCommandService);
+		verifyNoInteractions(commandService, archiveService, lineService);
 	}
 
 	// 方法：建立測試用的 LINE 簽章。

@@ -26,9 +26,15 @@ class CommandServicePingTest {
 
 	CommandService commandService;
 
+	// 方法：以正式預設規則建立 ping 指令服務。
 	@BeforeEach
 	void setUp() {
-		commandService = new CommandService(assetService, lineService, archiveService);
+		commandService = new CommandService(
+			assetService,
+			lineService,
+			archiveService,
+			new AssetArchivePolicy("ZD#####,ZD#####@,ZD-JY#####,YJ######")
+		);
 	}
 
 	@Test

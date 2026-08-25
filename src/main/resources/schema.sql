@@ -84,16 +84,3 @@ CREATE TABLE IF NOT EXISTS pending_archive_confirmation (
     requested_at  TEXT NOT NULL,
     PRIMARY KEY (source_id, requester_id)
 );
-
--- 管理日誌
-CREATE TABLE IF NOT EXISTS admin_audit_log (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    action        TEXT    NOT NULL,
-    entity_type   TEXT    NOT NULL,
-    entity_id     TEXT,
-    summary_json  TEXT    NOT NULL CHECK (json_valid(summary_json)),
-    created_at    TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_admin_audit_log_created
-    ON admin_audit_log (created_at DESC);

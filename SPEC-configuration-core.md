@@ -12,6 +12,8 @@
 4. Desktop bootstrap 解密並映射成 Spring Boot default properties，再建立 ApplicationContext。
 5. 執行期間編輯設定後，依序停止 ngrok 與 Spring context，再以新設定重新啟動。
 
+設定介面只存在於 Windows App 的 Swing 設定精靈。主視窗、首次安裝與 Setup 維護模式都開啟同一套 App 內設定流程，不提供瀏覽器管理頁。
+
 設定位置：
 
 - 設定根目錄：`%LOCALAPPDATA%\AssetsManagerLinebot\config`
@@ -23,22 +25,20 @@
 欄位分組：
 
 - 必要：LINE Channel Token、LINE Channel Secret、資料根目錄。
-- AI：API URL、API Key、Model、必要欄位、Timeout、價格設定。
-- 語音：啟用狀態、MCP URL、MCP Token、相關 Model。
-- 報價：簽章 Secret、圖片連結 Secret、輸出與工作排程設定。
+- 圖片歸檔：代碼格式遮罩；`#` 代表數字、`@` 代表大寫英文字母，畫面範例由第一組格式自動產生。
+- LINE 網路：連線逾時與單次請求逾時秒數。
+- 圖片同步：是否啟用、同步週期與同步 Token。
 - Log：Level、單檔大小、保留天數、總容量及資源記錄週期。
 - ngrok：是否啟用、agent 路徑、Authtoken；公開網址由 `ngrok-connector` 回填。
+- Cloudflare：是否啟用、agent 路徑、Tunnel Token 與 `auto`／`http2`／`quic` 協定；公司 VPN 預設 `http2`。
 
 以下欄位視為機密，畫面只可顯示遮罩值：
 
 - `LINE_BOT_CHANNEL_TOKEN`
 - `LINE_BOT_CHANNEL_SECRET`
-- `AI_API_KEY`
-- `VOICE_MCP_AUTH_TOKEN`
 - `ASSETS_SYNC_TOKEN`
-- `QUOTATION_POSTBACK_SECRET`
-- `QUOTATION_IMAGE_LINK_SECRET`
 - `NGROK_AUTHTOKEN`
+- `CLOUDFLARE_TUNNEL_TOKEN`
 
 ## Tech Stack
 
@@ -127,4 +127,3 @@ public void save(
 
 - 正式產品名稱、公司／發行者名稱及支援網址尚待發佈前提供，不阻擋核心開發。
 - JNA Platform 的精確版本與授權清單在實作計畫階段鎖定；新增依賴須通過測試與弱點檢查。
-
