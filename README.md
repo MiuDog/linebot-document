@@ -1,6 +1,6 @@
 # Assets Manager LINE Bot
 
-`@linebot-document@0.2.0`
+`@linebot-document@0.3.0`
 
 把 LINE 群組當成圖片資產的收件與取件窗口：群組上傳圖片後，引用圖片並輸入合法資料夾代碼即可直接歸檔；SQLite 保存圖片組與正式檔案索引。
 
@@ -46,9 +46,11 @@ system-data\
 
 ## Windows App（未簽章，個人使用）
 
-Windows 桌面版會安裝為單一 App，內含 Java Runtime，不需要使用者另裝 JDK／JRE。第一次開啟會顯示繁體中文設定精靈；關閉視窗後仍可留在系統匣背景執行，再次開啟 App 可查看狀態與即時 Log。
+Windows 桌面版會安裝為單一 App，內含 Java Runtime，不需要使用者另裝 JDK／JRE。第一次開啟會顯示繁體中文設定精靈；Spring、Tunnel 與 LINE Bot 由目前使用者的獨立背景 service 執行，Windows 登入時自動啟動。再次開啟 App 只載入控制視窗，可查看狀態與即時 Log，不會建立第二份機器人程序。
 
 所有設定都在 App 內完成：首次安裝會自動顯示設定精靈，日後可從主視窗按「編輯設定」，不需要也不提供瀏覽器管理頁。
+
+主視窗的「測試連線」可直接輸入公開或內網網域，並分別檢查本機服務、DNS、TCP、TLS、HTTP 回應與 LINE Bot API；每個階段會顯示成功、失敗、略過與耗時，方便判斷是 VPN、Tunnel、憑證、服務或 Channel Token 問題。
 
 **目前版本導向為未簽章的個人使用版。** 功能完整，唯一差別是沒有 Authenticode 簽章，首次執行會出現 Windows SmartScreen 警告（處理方式見下方）。Release 建立在 private repo，只有具備存取權的人看得到，並一律標記為 pre-release。
 
@@ -57,7 +59,7 @@ Windows 桌面版會安裝為單一 App，內含 Java Runtime，不需要使用�
 推送符合 `v<主版號>.<次版號>.<修訂號>` 的 tag 即自動建置、驗證並建立 GitHub Release，資產只有一份 Setup.exe：
 
 ```powershell
-powershell.exe -NoProfile -File scripts\release.ps1 -Version 0.2.0
+powershell.exe -NoProfile -File scripts\release.ps1 -Version 0.3.0
 ```
 
 腳本會依序完成前置檢查、改寫 `pom.xml` 與 README 版本、提交、本機完整驗證、推分支再推 tag。任何一項前置檢查不過就在改動版本庫之前中止：
@@ -83,14 +85,14 @@ Release 內容取決於是否設定簽章憑證，workflow 會自動判斷：
 建立個人使用的 Setup：
 
 ```powershell
-powershell.exe -NoProfile -File scripts\build-windows-installer.ps1 -Version 0.1.1
+powershell.exe -NoProfile -File scripts\build-windows-installer.ps1 -Version 0.3.0
 ```
 
 完整安裝、修復、預設保留資料與明確清除驗收：
 
 ```powershell
 powershell.exe -NoProfile -File scripts\test-windows-installer.ps1 `
-	-InstallerPath dist\LinebotDocument-Setup-0.1.1.exe `
+	-InstallerPath dist\LinebotDocument-Setup-0.3.0.exe `
 	-ExecuteLifecycle `
 	-TestPurge
 ```

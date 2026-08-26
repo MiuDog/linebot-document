@@ -1,6 +1,7 @@
 package dev.miudog.linebotdocument;
 
 import dev.miudog.linebotdocument.desktop.DesktopApplication;
+import dev.miudog.linebotdocument.desktop.ServiceApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -31,12 +32,18 @@ public class LinebotDocumentApplication {
 	 */
 	// 方法：執行 main 方法的處理流程。
 	public static void main(String[] args) {
-		if (DesktopApplication.desktopModeRequested(args)) {
+		ApplicationRuntimeMode runtimeMode = ApplicationRuntimeMode.resolve(args);
+		if (runtimeMode == ApplicationRuntimeMode.DESKTOP) {
 			DesktopApplication.createDefault().start(args);
 			return;
 		}
 
-		// 外部函式：未要求桌面模式時保持既有 server 與 Docker 的 Spring 啟動流程。
+		if (runtimeMode == ApplicationRuntimeMode.SERVICE) {
+			ServiceApplication.createDefault().start(args);
+			return;
+		}
+
+		// 外部函式：一般 server 與 Docker 保持直接由環境設定啟動 Spring。
 		SpringApplication.run(LinebotDocumentApplication.class, args);
 	}
 }

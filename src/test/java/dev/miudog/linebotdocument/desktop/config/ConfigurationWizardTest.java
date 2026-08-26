@@ -2,7 +2,10 @@ package dev.miudog.linebotdocument.desktop.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.nio.file.Path;
+import java.util.Arrays;
 import javax.swing.JPasswordField;
 import javax.swing.JTabbedPane;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,20 @@ class ConfigurationWizardTest {
 		assertThat(wizard.tabs().getTabCount()).isEqualTo(AppConfigurationField.Group.values().length);
 		assertThat(wizard.fieldComponent(AppConfigurationField.ASSETS_SYNC_TOKEN)).isInstanceOf(JPasswordField.class);
 		assertThat(wizard.tabs()).isInstanceOf(JTabbedPane.class);
+	}
+
+	// 方法：Cloudflare 分頁顯示兩個 App 不可共用 Tunnel 與移機順序。
+	@Test
+	void shouldExplainCloudflareTunnelOwnershipAndMigration() {
+		ConfigurationWizard wizard = new ConfigurationWizard(
+			new ConfigurationWizardModel(validConfiguration()),
+			configuration -> {
+			}
+		);
+
+		assertThat(componentText(wizard.tabs()))
+			.contains("Commercial 與 Document 必須使用不同 Tunnel")
+			.contains("先關閉舊電腦");
 	}
 
 	// 方法：保存有效編輯時持久化設定並要求重新啟動服務。
@@ -71,5 +88,16 @@ class ConfigurationWizardTest {
 		return AppConfiguration.defaults(Path.of(System.getProperty("java.io.tmpdir")))
 			.withValue(AppConfigurationField.LINE_BOT_CHANNEL_TOKEN, "token")
 			.withValue(AppConfigurationField.LINE_BOT_CHANNEL_SECRET, "secret");
+	}
+
+	// 方法：遞迴收集 Swing 元件文字，驗證提示確實存在於使用者畫面。
+	private String componentText(Component component) {
+		String ownText = component instanceof javax.swing.JLabel label ? label.getText() : "";
+
+		if (!(component instanceof Container container)) return ownText;
+
+		return ownText + Arrays.stream(container.getComponents())
+			.map(this::componentText)
+			.reduce("", String::concat);
 	}
 }

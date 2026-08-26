@@ -17,6 +17,10 @@
 
 公司 VPN 常封鎖 UDP，因此預設 `CLOUDFLARE_PROTOCOL=http2`，使用 TCP 7844。只有網路管理員確認 UDP 7844 可通行時才改為 `quic`；希望 cloudflared 自動選擇時可設為 `auto`。
 
+Commercial 與 Document 必須各自建立一條 Tunnel，分別使用不同的 Tunnel ID、Token 與公開網域。若把同一個 Token 安裝到另一台電腦，Cloudflare 會把它視為同一條 Tunnel 的另一個 Connector，而不是自動取代舊電腦。
+
+同一台 Windows 電腦上，App 會阻止兩個產品同時占用相同 Tunnel；啟動後主畫面會顯示電腦名稱、Tunnel ID 與 Connector ID。跨電腦移機請先關閉舊電腦上的 App，再於新電腦完成設定與連線測試，最後更新 Tunnel Token，使舊電腦保存的 Token 失效。App 不持有 Cloudflare API 管理權限，因此不會自行關閉另一台電腦上的 Connector。
+
 App 只有在 cloudflared 的本機 `/ready` 回傳成功後才顯示 Tunnel 已啟動。若逾時，請在 App Log 查看已遮罩的 cloudflared 診斷，並請網路管理員確認：
 
 - DNS 可以解析 Cloudflare Tunnel 端點。

@@ -45,6 +45,7 @@ public final class CloudflareProcess implements CloudflareProcessControl {
 	private volatile CloudflareStatus status;
 	private int metricsPort;
 	private volatile String lastDiagnostic;
+	private volatile CloudflareAgentIdentity identity;
 	private String tunnelToken;
 
 	//#endregion
@@ -67,6 +68,7 @@ public final class CloudflareProcess implements CloudflareProcessControl {
 		this.readinessProbe = Objects.requireNonNull(readinessProbe, "readiness probe 不可為 null");
 		this.status = CloudflareStatus.STOPPED;
 		this.lastDiagnostic = "";
+		this.identity = CloudflareAgentIdentity.empty();
 		this.tunnelToken = "";
 	}
 
@@ -93,6 +95,7 @@ public final class CloudflareProcess implements CloudflareProcessControl {
 		metricsPort = metricsPortSupplier.getAsInt();
 		this.tunnelToken = token;
 		lastDiagnostic = "";
+		identity = CloudflareAgentIdentity.empty();
 		List<String> command = List.of(
 			agent.toString(),
 			"tunnel",
@@ -182,6 +185,12 @@ public final class CloudflareProcess implements CloudflareProcessControl {
 		return lastDiagnostic;
 	}
 
+	// 方法：取得 cloudflared 官方啟動訊息中已識別的 Tunnel、Connector 與電腦身分。
+	@Override
+	public CloudflareAgentIdentity identity() {
+		return identity;
+	}
+
 	// 方法：正常終止本物件建立的 child，逾時後才強制停止同一程序。
 	@Override
 	public synchronized void stop(Duration timeout) {
@@ -238,6 +247,7 @@ public final class CloudflareProcess implements CloudflareProcessControl {
 				if (safeLine.isBlank()) continue;
 
 				lastDiagnostic = safeLine;
+				identity = identity.withDiagnostic(safeLine);
 
 				// 日誌：cloudflared 的網路警告與錯誤需保留，正常連線細節只在 DEBUG 顯示。
 				if (isWarningOrError(safeLine)) {

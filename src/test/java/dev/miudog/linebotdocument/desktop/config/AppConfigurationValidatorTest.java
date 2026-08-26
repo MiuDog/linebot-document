@@ -54,6 +54,18 @@ class AppConfigurationValidatorTest {
 		assertThat(validator.validate(validConfiguration())).isEmpty();
 	}
 
+	// 方法：啟用 Cloudflare 時要求綁定標準 Tunnel UUID，避免客戶誤貼其他機器人的 Token。
+	@Test
+	void shouldRequireAValidTunnelIdWhenCloudflareIsEnabled() {
+		AppConfiguration configuration = validConfiguration()
+			.withValue(AppConfigurationField.CLOUDFLARE_ENABLED, "true")
+			.withValue(AppConfigurationField.CLOUDFLARE_TUNNEL_ID, "wrong-tunnel");
+
+		assertThat(validator.validate(configuration))
+			.extracting(AppConfigurationValidator.Violation::field)
+			.contains(AppConfigurationField.CLOUDFLARE_TUNNEL_ID);
+	}
+
 	// 方法：建立可通過驗證的最小設定快照。
 	// 資料根目錄必須是執行中作業系統認定的絕對路徑；寫死 Windows 磁碟機代號會讓
 	// 同一份設定在 Linux CI 被視為相對路徑而驗證失敗，因此改用當地的暫存目錄。

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -42,6 +43,12 @@ public final class AppConfigurationValidator {
 			}
 		}
 
+		// Cloudflare 啟用時必須綁定 Tunnel UUID，避免 Token 被誤用到另一個機器人。
+		if (Boolean.parseBoolean(configuration.value(AppConfigurationField.CLOUDFLARE_ENABLED))
+			&& configuration.value(AppConfigurationField.CLOUDFLARE_TUNNEL_ID).isBlank()) {
+			violations.add(new Violation(AppConfigurationField.CLOUDFLARE_TUNNEL_ID, "使用 Cloudflare 時必須填寫綁定 Tunnel ID"));
+		}
+
 		return List.copyOf(violations);
 	}
 
@@ -62,12 +69,23 @@ public final class AppConfigurationValidator {
 			case ABSOLUTE_PATH -> value.isBlank() || isAbsolutePath(value);
 			case LOG_LEVEL -> value.isBlank() || LOG_LEVELS.contains(value.toUpperCase(Locale.ROOT));
 			case DATA_SIZE -> value.isBlank() || DATA_SIZE.matcher(value).matches();
+			case UUID -> value.isBlank() || isUuid(value);
 			case ARCHIVE_CODE_FORMATS -> value.isBlank() || isArchiveCodeFormats(value);
 			case CLOUDFLARE_PROTOCOL -> value.isBlank()
 				|| value.equalsIgnoreCase("auto")
 				|| value.equalsIgnoreCase("http2")
 				|| value.equalsIgnoreCase("quic");
 		};
+	}
+
+	// 方法：驗證輸入為完整標準 UUID，避免 Java 寬鬆解析接受縮短格式。
+	private boolean isUuid(String value) {
+		try {
+			return UUID.fromString(value).toString().equalsIgnoreCase(value);
+		}
+		catch (IllegalArgumentException exception) {
+			return false;
+		}
 	}
 
 	// 方法：驗證整數落在允許的閉區間內。

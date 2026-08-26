@@ -219,6 +219,10 @@ public final class ConfigurationWizard implements AutoCloseable {
 		JPanel form = new JPanel(new GridBagLayout());
 		int row = 0;
 
+		if (group == AppConfigurationField.Group.CLOUDFLARE) {
+			row = addCloudflareGuidance(form, row);
+		}
+
 		// 單一演算法：依中繼資料順序加入此群組的標籤與輸入控制項。
 		for (AppConfigurationField field : AppConfigurationField.values()) {
 			if (field.group() != group) continue;
@@ -235,6 +239,25 @@ public final class ConfigurationWizard implements AutoCloseable {
 
 		// 外部函式：以可捲動分頁容納不同螢幕尺寸下的完整設定表單。
 		tabs.addTab(groupLabel(group), new JScrollPane(form));
+	}
+
+	// 方法：在 Cloudflare 分頁顯示 Tunnel 歸屬與安全移機順序。
+	private int addCloudflareGuidance(
+		JPanel form,
+		int row
+	) {
+		JLabel guidance = new JLabel(
+			"<html>Commercial 與 Document 必須使用不同 Tunnel。移機時請先關閉舊電腦，確認新電腦連線後再更新 Token。</html>"
+		);
+		GridBagConstraints guidanceConstraints = constraints(0, row);
+
+		guidanceConstraints.gridwidth = 2;
+		guidanceConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+		// 外部函式：將移機警示加入設定表單，避免客戶在不同電腦複製出 Connector。
+		form.add(guidance, guidanceConstraints);
+
+		return row + 1;
 	}
 
 	// 方法：依欄位機密屬性建立文字或密碼控制項並加入表單。

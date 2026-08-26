@@ -21,6 +21,9 @@ public interface CloudflareProcessControl {
 	// 方法：取得最後一筆已清理的 cloudflared 診斷。
 	String diagnostic();
 
+	// 方法：取得 cloudflared 已回報且不含 Token 的 connector 身分。
+	CloudflareAgentIdentity identity();
+
 	// 方法：在 timeout 內停止本 App 建立的 child。
 	void stop(Duration timeout);
 

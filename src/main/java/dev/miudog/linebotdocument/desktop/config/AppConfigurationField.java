@@ -22,7 +22,7 @@ public enum AppConfigurationField {
 	ASSETS_SYNC_ENABLED("ASSETS_SYNC_ENABLED", "app.storage.sync-enabled", "啟用資產同步", Group.LINE, false, false, "false", Format.BOOLEAN),
 	ASSETS_SYNC_INTERVAL_MS("ASSETS_SYNC_INTERVAL_MS", "app.storage.sync-interval-ms", "資產同步週期", Group.LINE, false, false, "30000", Format.POSITIVE_INTEGER),
 	ASSETS_SYNC_TOKEN("ASSETS_SYNC_TOKEN", "app.storage.sync-token", "資產同步 Token", Group.LINE, true, false, "", Format.NONE),
-	METHOD_TRACING_ENABLED("METHOD_TRACING_ENABLED", "app.observability.method-tracing-enabled", "啟用方法追蹤", Group.LOG, false, false, "false", Format.BOOLEAN),
+	METHOD_TRACING_ENABLED("METHOD_TRACING_ENABLED", "app.observability.method-tracing-enabled", "方法追蹤（僅測試，會增加 CPU）", Group.LOG, false, false, "false", Format.BOOLEAN),
 	LOG_LEVEL_ROOT("LOG_LEVEL_ROOT", "logging.level.root", "Log Level", Group.LOG, false, false, "INFO", Format.LOG_LEVEL),
 	LOG_MAX_FILE_SIZE("LOG_MAX_FILE_SIZE", "LOG_MAX_FILE_SIZE", "Log 單檔大小", Group.LOG, false, false, "20MB", Format.DATA_SIZE),
 	LOG_MAX_HISTORY("LOG_MAX_HISTORY", "LOG_MAX_HISTORY", "Log 保留天數", Group.LOG, false, false, "30", Format.POSITIVE_INTEGER),
@@ -33,6 +33,7 @@ public enum AppConfigurationField {
 	NGROK_AUTHTOKEN("NGROK_AUTHTOKEN", "app.desktop.ngrok.authtoken", "ngrok Authtoken", Group.NGROK, true, false, "", Format.NONE),
 	CLOUDFLARE_ENABLED("CLOUDFLARE_ENABLED", "app.desktop.cloudflare.enabled", "使用 Cloudflare", Group.CLOUDFLARE, false, false, "false", Format.BOOLEAN),
 	CLOUDFLARE_AGENT_PATH("CLOUDFLARE_AGENT_PATH", "app.desktop.cloudflare.agent-path", "cloudflared 執行檔", Group.CLOUDFLARE, false, false, "", Format.ABSOLUTE_PATH),
+	CLOUDFLARE_TUNNEL_ID("CLOUDFLARE_TUNNEL_ID", "app.desktop.cloudflare.tunnel-id", "此 App 專用 Tunnel ID", Group.CLOUDFLARE, false, false, "", Format.UUID),
 	CLOUDFLARE_TUNNEL_TOKEN("CLOUDFLARE_TUNNEL_TOKEN", "app.desktop.cloudflare.tunnel-token", "Cloudflare Tunnel Token", Group.CLOUDFLARE, true, false, "", Format.NONE),
 	CLOUDFLARE_PROTOCOL("CLOUDFLARE_PROTOCOL", "app.desktop.cloudflare.protocol", "Cloudflare 傳輸協定", Group.CLOUDFLARE, false, false, "http2", Format.CLOUDFLARE_PROTOCOL);
 
@@ -158,6 +159,7 @@ public enum AppConfigurationField {
 		ABSOLUTE_PATH,
 		LOG_LEVEL,
 		DATA_SIZE,
+		UUID,
 		ARCHIVE_CODE_FORMATS,
 		CLOUDFLARE_PROTOCOL
 	}
