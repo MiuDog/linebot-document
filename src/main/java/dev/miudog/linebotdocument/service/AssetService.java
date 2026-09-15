@@ -208,4 +208,9 @@ public class AssetService {
 		return repository.findByMessageId(messageId);
 	}
 
+	// 方法：執行此方法定義的受控處理流程。
+	public byte[] contentOf(Asset asset) throws IOException {
+		return fileStorage.read(asset.filePath());
+	}
+
 }

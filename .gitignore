@@ -34,8 +34,11 @@ build/
 
 # 排除所有環境變數與私密憑證檔案
 .env
+/.codex-tmp/
 .env.*
 *.local
+/secrets/*
+!/secrets/README.md
 # 但範本檔要進版控，它只有說明與空白值
 !.env.example
 
@@ -54,3 +57,4 @@ build/
 ### 桌面 App 執行期資料 ###
 # 使用者資料根目錄：log、SQLite 屬營運資料，不進版控。
 /system-data/
+/company-assets-local/

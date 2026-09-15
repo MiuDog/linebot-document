@@ -12,15 +12,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class UnifiedEnvironmentConfigurationTest {
 
+	// 方法：部署只將 PostgreSQL 與物件儲存視為持久狀態，不再掛載桌面資料目錄。
 	@Test
-	void derivesEveryFilesystemLocationFromOneSystemRoot() throws IOException {
+	void keepsPersistentStateOutsideTheApplicationImage() throws IOException {
 		String environment = read(".env.example");
 		String properties = read("src/main/resources/application.properties");
 		String compose = read("docker-compose.yml");
 		String dockerfile = read("Dockerfile");
 
 		assertThat(environment)
-			.contains("SYSTEM_ROOT_PATH=")
+			.contains("COMPANY_ID=")
+			.contains("OBJECT_STORAGE_BUCKET=")
+			.contains("SECRETS_DIR=")
+			.doesNotContain("DATABASE_PASSWORD=")
 			.doesNotContain("ASSETS_ROOT=")
 			.doesNotContain("QUOTATION_ROOT_PATH=")
 			.doesNotContain("QUOTATION_OUTPUT_PATH=")
@@ -32,45 +36,45 @@ class UnifiedEnvironmentConfigurationTest {
 			.doesNotContain("app.quotation.")
 			.contains("app.observability.log-path=${app.system.root}/log");
 		assertThat(compose)
-			.contains("${SYSTEM_ROOT_PATH:-./system-data}:/data/system-root")
-			.contains("SYSTEM_ROOT_PATH=/data/system-root")
-			.doesNotContain("LOCAL_ADMIN_CONTAINER_HOST_ACCESS")
-			.contains("127.0.0.1:8088:8088")
+			.contains("SYSTEM_ROOT_PATH: /tmp/linebot")
+			.contains("database-data:/var/lib/postgresql/data")
+			.contains("object-storage-data:/data")
+			.contains("LOCAL_ADMIN_CONTAINER_HOST_ACCESS: \"true\"")
+			.contains("127.0.0.1:${APP_PORT:-8089}:8089")
+			.doesNotContain("./system-data")
 			.doesNotContain("ASSETS_ROOT=")
 			.doesNotContain("QUOTATION_ROOT_PATH=");
 		assertThat(dockerfile)
 			.doesNotContain("COPY outputs/excel-templates")
-			.contains("VOLUME /data/system-root")
-			.doesNotContain("VOLUME /data/assets");
+			.doesNotContain("VOLUME ");
 	}
 
-	// 方法：設定只能由桌面 App 開啟，不保留網頁設定按鈕、瀏覽器呼叫或頁面資源。
+	// 方法：正式入口只能啟動 Spring Boot，不保留任何桌面或服務監督模式。
 	@Test
-	void usesDesktopAppAsTheOnlyConfigurationSurface() throws IOException {
-		String desktopWindow = read("src/main/java/dev/miudog/linebotdocument/desktop/DesktopWindow.java");
+	void usesHeadlessSpringBootAsTheOnlyRuntime() throws IOException {
+		String application = read("src/main/java/dev/miudog/linebotdocument/LinebotDocumentApplication.java");
+		String properties = read("src/main/resources/application.properties");
 
-		assertThat(desktopWindow)
-			.contains("new JButton(\"編輯設定\")")
-			.doesNotContain("開啟本機管理頁")
-			.doesNotContain("Desktop.getDesktop().browse");
-		assertThat(Path.of("src/main/resources/static/admin"))
-			.doesNotExist();
-		assertThat(Path.of("src/main/resources/templates/admin"))
-			.doesNotExist();
+		assertThat(application)
+			.contains("SpringApplication.run(LinebotDocumentApplication.class, args)")
+			.doesNotContain("DesktopApplication")
+			.doesNotContain("ServiceApplication")
+			.doesNotContain("ApplicationRuntimeMode");
+		assertThat(Path.of("src/main/java/dev/miudog/linebotdocument/desktop")).doesNotExist();
+		assertThat(properties)
+			.contains("management.endpoint.health.probes.enabled=true")
+			.contains("management.endpoint.health.probes.add-additional-paths=true")
+			.contains("server.shutdown=graceful")
+			.contains("spring.lifecycle.timeout-per-shutdown-phase=${SHUTDOWN_TIMEOUT:30s}");
 	}
 
-	// 方法：Windows 發佈內容只能描述圖片資產功能，不夾帶報價硬體警告、選單或資料表。
+	// 方法：停止產生 Windows 安裝程式，並保留圖片資產產品邊界。
 	@Test
-	void packagesOnlyTheDocumentProductExperience() throws IOException {
-		String installer = read("packaging/windows/installer.nsi");
-		String packageScript = read("scripts/package-windows-app.ps1");
-		String schema = read("src/main/resources/schema.sql");
+	void retiresWindowsPackagingAndKeepsDocumentProductBoundary() throws IOException {
+		String schema = read("src/main/resources/db/migration/V1__baseline.sql");
 
-		assertThat(installer)
-			.doesNotContain("Excel.Application")
-			.doesNotContain("預設印表機")
-			.doesNotContain("報價 PDF");
-		assertThat(packageScript).doesNotContain("語音任務機器人");
+		assertThat(Path.of("packaging/windows")).doesNotExist();
+		assertThat(Path.of(".github/workflows/release-windows.yml")).doesNotExist();
 		assertThat(schema).doesNotContain("admin_audit_log");
 		assertThat(Path.of("src/main/resources/line/rich-menu.json")).doesNotExist();
 	}
