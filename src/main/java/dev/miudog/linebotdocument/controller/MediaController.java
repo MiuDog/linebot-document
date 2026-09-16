@@ -6,6 +6,7 @@ import dev.miudog.linebotdocument.service.AssetPathResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -55,16 +57,14 @@ public class MediaController {
 		// 外部呼叫：透過 Spring HTTP 回應 API 表達找不到對應資產。
 		if (found.isEmpty()) return ResponseEntity.notFound().build();
 
-		// 步驟 2：使用 Java NIO 確認實體檔案仍可讀取。
 		Asset asset = found.get();
-		Path file = paths.resolve(asset);
-
-		// 外部呼叫：使用 Java NIO 驗證媒體檔案仍可由服務讀取。
-		if (!Files.isReadable(file)) {
-			// 日誌：記錄媒體檔案不存在。
+		byte[] content;
+		try {
+			content = assetService.contentOf(asset);
+		}
+		catch (IOException | RuntimeException exception) {
+			// 日誌：記錄不含敏感內容的受控操作結果。
 			log.warn("event=media_file_missing assetId={}", asset.id());
-
-			// 外部呼叫：透過 Spring HTTP 回應 API 表達實體媒體已不存在。
 			return ResponseEntity.notFound().build();
 		}
 
@@ -77,6 +77,6 @@ public class MediaController {
 		return ResponseEntity.ok()
 			.contentType(contentType)
 			.cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePrivate())
-			.body(new FileSystemResource(file));
+			.body(new ByteArrayResource(content));
 	}
 }

@@ -239,3 +239,6 @@ Dockerfile 已設兩道保險，改動時請保留：
 - [部署與外部串接指南](01-bot-deployment.md)
 - [版本、Release 與 Push SOP](03-versioning-release-sop.md)
 - [類別索引](reference/index.md)
+# ⚠️ 部署段落已被取代
+
+LINE 業務指令仍可參考，但 Windows／ngrok／SQLite 部署方式已失效；請使用 [部署 Runbook](deployment-runbook.md)。

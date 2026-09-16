@@ -1,9 +1,8 @@
 package dev.miudog.linebotdocument;
 
-import dev.miudog.linebotdocument.desktop.DesktopApplication;
-import dev.miudog.linebotdocument.desktop.ServiceApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -22,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * <p>桌面設定、LINE Webhook、圖片歸檔與查詢共同組成本產品流程。
  */
 @SpringBootApplication
+@ConfigurationPropertiesScan
 @EnableScheduling
 public class LinebotDocumentApplication {
 
@@ -32,18 +32,7 @@ public class LinebotDocumentApplication {
 	 */
 	// 方法：執行 main 方法的處理流程。
 	public static void main(String[] args) {
-		ApplicationRuntimeMode runtimeMode = ApplicationRuntimeMode.resolve(args);
-		if (runtimeMode == ApplicationRuntimeMode.DESKTOP) {
-			DesktopApplication.createDefault().start(args);
-			return;
-		}
-
-		if (runtimeMode == ApplicationRuntimeMode.SERVICE) {
-			ServiceApplication.createDefault().start(args);
-			return;
-		}
-
-		// 外部函式：一般 server 與 Docker 保持直接由環境設定啟動 Spring。
+		// 外部函式：雲端與本地 Docker 共用唯一的 Spring Boot 啟動路徑。
 		SpringApplication.run(LinebotDocumentApplication.class, args);
 	}
 }

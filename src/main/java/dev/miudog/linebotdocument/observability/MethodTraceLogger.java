@@ -38,6 +38,7 @@ public class MethodTraceLogger {
 	@Around("""
             execution(public * dev.miudog.linebotdocument..*(..))
             && !within(dev.miudog.linebotdocument.observability..*)
+			&& !within(dev.miudog.linebotdocument.config.runtime..*)
 			""")
 	public Object trace(ProceedingJoinPoint joinPoint) throws Throwable {
 		if (!log.isDebugEnabled()) return traceFailuresOnly(joinPoint);
